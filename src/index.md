@@ -14,12 +14,6 @@ HamWAN cells have been deployed to six sites. Each site is interconnected with 5
 <script src="http://maps.googleapis.com/maps/api/js?v=3.exp&amp;libraries=places"></script>
 <script src="/map.js"></script>
 <div id="map_container" class="map_container">
-    <div id="search">
-      <input id="searchTextField" type="text" size="25" style="border:1px solid rgb(113, 123, 135);padding:1px 6px;">
-    </div>
-    <div id="fullscreen">
-      <div class="dropDownControl">Fullscreen</div>
-    </div>
     <div id="map_canvas" style="width:100%;height:100%;"></div>
 </div>
 <br />
