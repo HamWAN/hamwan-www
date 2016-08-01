@@ -65,3 +65,5 @@ We would like to thank the following organizations for their generous support of
 
 [![Digital Fortress](/digital fortress.png)](http://dfcolo.com/)
 [![Microhams](/microhams.gif)](http://microhams.com/)
+[![NGC457](/ngc457.gif)](http://ngc457.com/)
+[![Threshold Communications](/threshold.gif)](http://thresholdcommunications.com/)
