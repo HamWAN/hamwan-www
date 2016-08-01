@@ -47,7 +47,7 @@ If you think your site would make a good HamWAN cell site, let us know! If it's 
 
 Mailing List
 ============
-Sign up to the mailing list by [clicking here](http://mail.hamwan.org/mailman/listinfo/psdr) or sending an email to [psdr-join@HamWAN.org](psdr-join@HamWAN.org). The subject and body are not important. [Archives](http://mail.hamwan.org/pipermail/psdr/) of the distribution list are also available.
+Sign up to the mailing list by [clicking here](http://mail.hamwan.org/mailman/listinfo/psdr) or sending an email to [psdr-join@HamWAN.org](mailto:psdr-join@HamWAN.org). The subject and body are not important. [Archives](http://mail.hamwan.org/pipermail/psdr/) of the distribution list are also available.
 
 Online Chat Room
 ================
