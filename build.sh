@@ -11,7 +11,6 @@ rm -rf $TMP_DIR
 mkdir $TMP_DIR
 find src -type f -name "*.md" -print0 | while read -d $'\0' FILE
 do
-	FILE=`echo "$FILE" | sed 's/^\.\///'` # Remove leading "./" from path
 	HTML_FILE=`echo "$FILE" | sed -e 's/\.md$/.html/' -e 's/^src\///'` # Replace extension .md -> .html
 	pandoc -s "$FILE" -o "$TMP_DIR/$HTML_FILE"
 done
