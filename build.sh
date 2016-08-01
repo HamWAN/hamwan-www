@@ -41,6 +41,9 @@ done
 # Now publish any resources that might be left in the src tree (images, javascript, etc)
 rsync -a src/ $TMP_DIR/
 
+# And now we do a local hack to publish map status data
+ln -s /srv/www/hamwan.org/map/status/current.json $TMP_DIR/map/status.json
+
 # And do a not-quite-atomic-but-pretty-fast switchover of the live website to the new version
 rm out
 ln -s $TMP_DIR out

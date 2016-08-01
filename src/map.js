@@ -132,7 +132,7 @@ function initialize() {
     }
 
     // Get network status (site/clients/link data)
-    $.getJSON('/map/status/current.json', function(data) {
+    $.getJSON('/map/status.json', function(data) {
         for (var siteid in data.SITES) {
             var site = data.SITES[siteid];
             sites[siteid] = site;
