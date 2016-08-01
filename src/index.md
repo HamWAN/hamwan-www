@@ -27,8 +27,10 @@ Get Connected
 I'm in the coverage area
 ------------------------
 It only takes about $200 of equipment to connect—that's less than a typical 2 meter mobile setup! Our coverage map is based on the following radio and antenna combination:
-* [Poynting 5.9 GHz 30 dBi grid](http://www.titanwirelessonline.com/Poynting-5-8GHz-31dBi-Grid-p/at-30gr-58.htm) or [2 ft solid dish](http://www.titanwirelessonline.com/ARC-4-9-5-8GHz-30db-DualPOL-Dish-p/at-da5830sd1-arc.htm) antenna
-* [Mikrotik RouterBOARD Metal 5SHPn wifi radio](http://www.balticnetworks.com/routerboard-metal-5shpn.html)
+
+ * [Poynting 5.9 GHz 30 dBi grid](http://www.titanwirelessonline.com/Poynting-5-8GHz-31dBi-Grid-p/at-30gr-58.htm) or [2 ft solid dish](http://www.titanwirelessonline.com/ARC-4-9-5-8GHz-30db-DualPOL-Dish-p/at-da5830sd1-arc.htm) antenna
+ * [Mikrotik RouterBOARD Metal 5SHPn wifi radio](http://www.balticnetworks.com/routerboard-metal-5shpn.html)
+
 For more information on what to buy, see the [Client Hardware](/Client Hardware.html) comparison page.
 
 See [Client Node Configuration](/Client Node Congiguration) for instructions on configuring your modem. Join the IRC channel or mailing list for help.
