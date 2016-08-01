@@ -27,7 +27,7 @@ MAX_I=`expr ${#FILES[@]} - 1`
 echo "<div id=\"menu\">" >> $TMP_DIR/menu.html
 for i in `seq 0 $MAX_I`
 do
-	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]}</a><br />" >> $TMP_DIR/menu.html
+	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]%.html}</a><br />" >> $TMP_DIR/menu.html
 done
 echo "</div>" >> $TMP_DIR/menu.html
 
