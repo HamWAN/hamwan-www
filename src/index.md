@@ -60,4 +60,5 @@ If you would like to volunteer for any of the work required (see the wiki table 
 Supporting Organizations
 ========================
 We would like to thank the following organizations for their generous support of the HamWAN project and the local HamWAN standard network.
-[Digital Fortress![Digital Fortress](/digital fortress.png)](dfcolo.com)
+[Digital Fortress![Digital Fortress](/digital fortress.png)](http://dfcolo.com/)
+[Microhams![Microhams](/microhams.gif)](http://microhams.com/)
