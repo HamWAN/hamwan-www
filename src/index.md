@@ -25,7 +25,7 @@ HamWAN is not just in Western Washington! There are a handful of networks around
 
 Get Connected
 =============
-![HamWAN portable Setup](/portable setup.jpg)
+<div style="float: right;"><img src="/portable setup.jpg" alt="HamWAN portable setup" /><p>HamWAN portable setup</p></div>
 
 I'm in the coverage area
 ------------------------
