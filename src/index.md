@@ -16,7 +16,7 @@ HamWAN cells have been deployed to six sites. Each site is interconnected with 5
 <div id="map_container" class="map_container">
     <div id="map_canvas" style="width:100%;height:100%;"></div>
 </div>
-<br />
+
 Red "coverage areas" indicate a signal level of -70 dBm or better when using the 30 dBi recommended client antenna. A signal level of -70 dBm or stronger will support full speed, about 10 Mbps in areas with clear line of sight and no interference. Other areas with line of sight may have intermittent coverage or decreased speeds.
 
 Click on any of the nodes on the map for detail about that node.
