@@ -33,7 +33,7 @@ It only takes about $200 of equipment to connect—that's less than a typical 2 
 
 For more information on what to buy, see the [Client Hardware](/Client Hardware.html) comparison page.
 
-See [Client Node Configuration](/Client Node Congiguration) for instructions on configuring your modem. Join the IRC channel or mailing list for help.
+See [Client Node Configuration](/Client Node Configuration.html) for instructions on configuring your modem. Join the IRC channel or mailing list for help.
 
 I'm not in the coverage area
 ----------------------------
