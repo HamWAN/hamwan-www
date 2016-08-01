@@ -10,18 +10,31 @@ fi
 rm -rf $TMP_DIR
 mkdir $TMP_DIR
 
-# Pass 1: Generate the menu.html contents
-find src -type f -name "*.md" -print0 | while read -d $'\0' FILE
+# Pass 0: Index the documents we need to publish
+FILES=()
+HTMLS=()
+while read -d $'\0' FILE
 do
-	HTML_FILE=`echo "$FILE" | sed -e 's/\.md$/.html/' -e 's/^src\///'` # Replace extension .md -> .html
-	echo "<a href=\"/$HTML_FILE\">$HTML_FILE</a>" >> $TMP_DIR/menu.html
+	FILES+=("$FILE")
+	# Replace extension .md -> .html, and drop the src/ prefix.
+	HTML_FILE=`echo "$FILE" | sed -e 's/\.md$/.html/' -e 's/^src\///'`
+	HTMLS+=("$HTML_FILE")
+done < <(find src -type f -name "*.md" -print0)
+
+MAX_I=`expr ${#FILES[@]} - 1`
+
+# Pass 1: Generate the menu.html contents
+echo "<div id=\"menu\">" >> $TMP_DIR/menu.html
+for i in `seq 0 $MAX_I`
+do
+	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]}</a><br />" >> $TMP_DIR/menu.html
 done
+echo "</div>" >> $TMP_DIR/menu.html
 
 # Pass 2: Generate the remaining web contents, incorporating a full menu.html now
-find src -type f -name "*.md" -print0 | while read -d $'\0' FILE
+for i in `seq 0 $MAX_I`
 do
-	HTML_FILE=`echo "$FILE" | sed -e 's/\.md$/.html/' -e 's/^src\///'` # Replace extension .md -> .html
-	pandoc -s -B $TMP_DIR/menu.html "$FILE" -o "$TMP_DIR/$HTML_FILE"
+	pandoc -s -B $TMP_DIR/menu.html "${FILES[$i]}" -o "$TMP_DIR/${HTMLS[$i]}"
 done
 
 # Now publish any resources that might be left in the src tree (images, javascript, etc)
