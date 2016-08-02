@@ -1,0 +1,27 @@
+{toc}
+!Radio Tests
+#Spectrum Usage as a function of Output Power (under data load)
+#In-band interference levels that cause 20%, 50%, 80% drop in speed (how to do?  10MHz "noise" or single carrier?)
+#Adjacent signal interference that causes 20/50/80% drop in speed (how to do?  vary frequency proximity or power or both?  wideband noise or CW?)
+#MDS testing (what criteria to set for minimum throughput?)
+#RX overload testing (what criteria determines overload?)
+#Investigate weird observed behavior: TX power pulls back when set to 30/32dBm (within 5 sec).  Is this TPC communicated by the AP back to the STA?  Is this just internal amp pulling back?  Need to vary attenuation levels to distinguish.
+#Simulate a 2x2 APxSTA environment inside coax using isolating combiners + attenuators.  Determine how closely channels can get with how much power before a set amount of throughput degredating happens.
+#Output power vs. center frequency (go out of band for curiosity?)
+#Output power vs. bandwidth (5/10/20/40MHz)
+#Compare accuracy of RSSI / SNR reports vs. spectrum analyzer readings
+#Try to measure radio's TX noise floor as it climbs above spectrum analyzer's noise floor
+!Tools
+The attached "Sweep.py" file (look at the bottom of this page) will control a RouterOS modem and an 8566A spectrum analyzer to take a series of measurements.  The software can sweep an arbitrary range of powers and frequencies.  A series of graphs (PNG files) is created, and the raw measurement data is also saved.
+
+The PNGs are generated in PNG24 format by default.  This is excessive color depth for the graph data being displayed.  To save on file size, they can be converted with ImageMagick's convert utility like so:
+{CODE(caption="Smallify PNG")}
+mkdir converted
+for i in *.png; do convert $i png8:converted/$i; done
+{CODE}
+
+To create animated GIFs from the PNG sequence:
+{CODE(caption="Animated graphs")}
+convert -delay 10 -loop 0 *.png animated.gif
+{CODE}
+

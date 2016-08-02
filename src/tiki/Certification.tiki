@@ -1,0 +1,28 @@
+HamWAN's first goal is to provide a set of standards for implementing high performance microwave networks. Our second goal is to create a reference implementation of this network in the Puget Sound region.
+
+To call your network a HamWAN, you must meet the following certification criteria:
+# A ham must be able to use the ((Client Node Configuration)) instructions to connect to your network. You can use the ((Sector Configuration)) instructions to accomplish this. Here is a summary:
+** Use NV2 TDMA mode (currently only available on Mikrotik hardware)
+** Use the ((Spectrum Allocation|10 MHz or 5 MHz in 10 MHz channels)) frequency plan with 120 degree sectors
+# Your network must be routable on the Internet. It is important that HamWAN networks are interconnected, and to do this we use the Internet.
+** A convenient/cheap way to accomplish this is by using 44.0.0.0/8 addresses from [http://www.ampr.org/|AMPR]
+# Have your network reviewed by the HamWAN organization to confirm that these criteria have been met. Please email [mailto:psdr@hamwan.org|psdr@hamwan.org] when you are ready to certify your network.
+
+!Certified Networks
+* Puget Sound Data Ring - HamWAN reference network
+
+!Networks Pending Certification
+* [http://memhamwan.org/|MemHamWAN] - Memphis, Tennessee.
+* HamWAN-Tampa, Florida
+* [http://nmhamwan.org/|NM HamWAN] - Albuquerque, New Mexico
+* [http://www.w4vld.com/hamwan-south/|HamWAN South], Georgia. ''Are any sectors installed?''
+!Non-HamWAN Networks
+!!Interconnected/routable with HamWAN
+These networks have been designed in a way that allows communication with HamWAN, but they use different RF standards.
+* [http://hamnetdb.net/|HamNet] - European ham microwave network
+* [http://w8cmn.net|Mi6WAN] - Michigan
+~tc~
+!!Not connected / private networks
+* [http://www.broadband-hamnet.org/|BBHN]
+* [http://nw-mesh.wikidot.com/|NW-MESH]
+~/tc~

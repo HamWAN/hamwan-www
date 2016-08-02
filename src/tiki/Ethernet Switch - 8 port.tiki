@@ -1,0 +1,21 @@
+!!!Official Selection
+
+!!!Suppliers
+
+!!!Alternatives
+#D-Link DGS-1100-08, $81.62 @ Amazon,  [http://www.dlink.com/us/en/business-solutions/switching/smart-switches/easysmart/dgs-1100-08--8-port-gigabit-easysmart-switch|product link]
+#RouterBoard RB2011L-RM, rack-mountable, full-blown RouterOS Level4, 5 GigE + 5 100Mbit, $85 @ Streakwave
+#RouterBoard RB2011UAS-RM, rack-mountable, full-blown RouterOS Level5, 5 GigE + 5 100Mbit, $105 @ Streakwave
+#RouterBoard RB2011UAS-2HnD-IN, NOT rack-mountable, full-blown RouterOS Level5, 1W 2-chain 2.4GHz radio, 5 GigE + 5 100Mbit, $109 @ Streakwave
+
+!!!Requirements
+#VLAN support
+#Gigabit speed
+#Port mirroring
+#Jumbo frames
+#Compact size
+#Low power consumption
+#Fanless design
+
+The RouterBoards do not meet the GigE-for-all-ports requirement, but this might be OK.  They feature GigE on 1/2 of their ports, provide 2 more ports than 8-port D-Link, and are fully capable of handling MPLS-TE traffic while preserving QoS.  This might be a huge advantage.  The price difference between these routers and the D-Link smart switch is miniscule.
+

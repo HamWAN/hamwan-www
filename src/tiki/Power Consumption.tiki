@@ -1,0 +1,28 @@
+!!!Measurements
+||__Device__|__Condition__|__Measured At__|__Consumption__
+AP7900|Idle|120VAC|7W
+RB2011UAS-RM|Idle|120VAC|3W
+912UAG-5HPnD Outdoor|Idle|120VAC|2W
+912UAG-5HPnD Outdoor|100% TX|120VAC|9W
+Metal 5SHPn|Idle|120VAC|4W
+Metal 5SHPn|Idle|23.6VDC|3.776W
+Metal 5SHPn|100% TX|120VAC|7W
+Metal 5SHPn|100% TX|23.4VDC|6.318W
+airVision 2 airCam|Operating|120VAC|2W||
+
+!!!Power Budget Figures
+||__Device__|__Consumption__|__Notes__
+AP7900|7W|Steady state, not affected by load
+RB2011UAS-RM|3W|Very light load on this router with present network configuration
+912UAG-5HPnD Outdoor|5.5W|50/50 TX/RX
+Metal 5SHPn|5.5W|50/50 TX/RX
+airVision 2 airCam|2W|Constant draw regardless of configuration||
+
+!!!Haystack Power Budget
+||__Device__|__Quantity__|__Total Consumption__
+AP7900|1|7W
+RB2011UAS-RM|1|3W
+912UAG-5HPnD Outdoor|2|11W
+Metal 5SHPn|2|11W||
+__Total:__ 32W
+

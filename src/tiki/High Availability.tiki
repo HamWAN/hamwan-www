@@ -1,0 +1,212 @@
+{maketoc}
+!Base Pacemaker/Corosync Config (Using Asterisk as an example service)
+Note that these instructions are based on Ubuntu 14.04 LTS, and may vary if you're on a different version or OS.
+!!Why?
+High Availability allows multiple servers to cluster to provide one or more network services to clients without clients having to treat them as separate servers. The cluster will detect failures, and move resources to the appropriate server to continue availability.
+!!How?
+Pacemaker and Corosync work together to provide a cluster system capable of managing IPs and other services to ensure availability. In the case of 2 server clusters, Pacemaker will need to be told to ignore quorum issues, and the potential for split-brain scenarios is increased. This config will be based on a cluster communicating via unicast rather than multicast.
+
+This configuration is based on the post here: http://syshell.net/2014/08/26/pacemaker-configure-cluster/
+
+#__Install Pacemaker and Corosync on all nodes__
++{CODE(colors=none)}
+apt-get install pacemaker corosync
+{CODE}
+#__If you have fewer than three hosts, set general pacemaker config to ignore quorum on all nodes__
++{CODE(colors=none)}
+echo "CMAN_QUORUM_TIMEOUT=0" > /etc/default/cman
+{CODE}
+#__Enable corosync to start on boot on all nodes__
++{CODE(colors="none")}
+echo "START=yes" > /etc/default/corosync
+{CODE}
+#__Configure pacemaker to start on boot on all nodes__
++{CODE(colors=none)}
+update-rc.d pacemaker defaults
+{CODE}
+#__Determine the value for your bindnetaddr config line__
++{CODE(colors=none)}
+ip addr | grep "inet " | tail -n 1 | awk '{print $4}' | sed s/255/0/
+{CODE}
+#__Configure /etc/corosync/corosync.conf on all nodes__
++You will want to adjust the bindnetaddr, ttl, cluster_name, and node list to fit your application. This is an example configuration for a two node cluster.
++{CODE(colors=none)}
+totem {
+        version: 2
+
+        # How long before declaring a token lost (ms)
+        token: 3000
+
+        # How many token retransmits before forming a new configuration
+        token_retransmits_before_loss_const: 10
+
+        # How long to wait for join messages in the membership protocol (ms)
+        join: 60
+
+        # How long to wait for consensus to be achieved before starting a new round of membership configuration (ms)
+        consensus: 3600
+
+        # Turn off the virtual synchrony filter
+        vsftype: none
+
+        # Number of messages that may be sent by one processor on receipt of the token
+        max_messages: 20
+
+        # Limit generated nodeids to 31-bits (positive signed integers)
+        clear_node_high_bit: yes
+
+        # Disable encryption
+        secauth: off
+
+        # How many threads to use for encryption/decryption
+        threads: 0
+
+        # Optionally assign a fixed node id (integer)
+        # nodeid: 1234
+
+        # This specifies the mode of redundant ring, which may be none, active, or passive.
+        rrp_mode: none
+
+        interface {
+                # The following values need to be set based on your environment 
+                ringnumber: 0
+                bindnetaddr: <BINDNETADDR HERE>
+                mcastport: 5405
+                ttl: 1
+        }
+        transport: udpu
+        cluster_name: ha-asterisk
+}
+
+nodelist {
+        node {
+                ring0_addr: 44.24.255.50
+        }
+        node {
+                ring0_addr: 44.24.255.51
+        }
+}
+
+amf {
+        mode: disabled
+}
+
+quorum {
+        # Quorum for the Pacemaker Cluster Resource Manager
+        provider: corosync_votequorum
+        expected_votes: 1
+}
+
+aisexec {
+        user:   root
+        group:  root
+}
+
+logging {
+        fileline: off
+        to_stderr: yes
+        to_logfile: no
+        to_syslog: yes
+        syslog_facility: daemon
+        debug: off
+        timestamp: on
+        logger_subsys {
+                subsys: AMF
+                debug: off
+                tags: enter|leave|trace1|trace2|trace3|trace4|trace6
+        }
+}
+{CODE}
+#__Start Corosync and Pacemaker__
++At this point corosync and pacemaker should be configured to form the base of the cluster. Lets start them and make sure things are reporting as expected.
++{CODE(colors=none caption="On all nodes:")}
+service corosync start
+service pacemaker start
+{CODE}
++{CODE(colors=none caption="Check if the cluster is talking properly...")}
+root@ha-asterisk-1:/etc/corosync# crm_mon -A1f
+Last updated: Thu Mar 19 19:32:53 2015
+Last change: Thu Mar 19 15:39:58 2015 via cibadmin on ha-asterisk-1
+Stack: corosync
+Current DC: ha-asterisk-2 (739835699) - partition with quorum
+Version: 1.1.10-42f2063
+2 Nodes configured
+0 Resources configured
+
+Online: [ ha-asterisk-1 ha-asterisk-2 ]
+
+Node Attributes:
+* Node ha-asterisk-1:
+* Node ha-asterisk-2:
+
+Migration summary:
+* Node ha-asterisk-1: 
+* Node ha-asterisk-2:
+{CODE}
++We can see here that the two nodes are configured and online, the cluster has elected ha-asterisk-2 to be the controller (not necessarily where services will be started). At this point we are ready to move forward with configuring services.
+#__Configure the basic settings of the running cluster__
++The following commands are issued via the cluster, and are automatically synced in the configuration amongst all nodes.
++{CODE(colors=none caption="STONITH is a means to forcibly stop the other node (usually via remote power control) in the case of a hangup. We aren't making use of it, so we'll disable it.")}
+crm configure property stonith-enabled=false
+{CODE}
++{CODE(colors=none caption="If you only have two nodes, configure the cluster to ignore the fact that it doesn't have quorum in the case of a failure. Otherwise if a node in a two node cluster fails, the remaining node won't have quorum and won't start services.")}
+crm configure property no-quorum-policy=ignore
+{CODE}
++{CODE(colors=none caption="Configure the cluster with resource stickiness, this gives the cluster a preference to keep services running where they already are. If this is not set, services may be migrated again after a failed node comes back online.")}
+crm configure rsc_defaults resource-stickiness=100
+{CODE}
+#__Examine the basic configuration__
++{CODE(colors=none)}
+root@ha-asterisk-1:/etc/corosync# crm configure show
+node $id="739835698" ha-asterisk-1
+node $id="739835699" ha-asterisk-2
+property $id="cib-bootstrap-options" \\
+\tdc-version="1.1.10-42f2063" \\
+\tcluster-infrastructure="corosync" \\
+\tstonith-enabled="false" \\
+\tno-quorum-policy="ignore"
+rsc_defaults $id="rsc-options" \\
+\tresource-stickiness="100"
+{CODE}
+#__Configure a Highly Available IP__
++{CODE(colors=none)}
+crm configure primitive HA-Asterisk-IP ocf:heartbeat:IPaddr2 params ip=IP_ADDRESS_HERE cidr_netmask=32 op monitor interval=30s
+{CODE}
++Note that this IP will be added to the box locally, but if the IP is not part of the local subnet, you'll need to make sure that quagga is running and configured to allow the box to use the IP. See the ((Servers|quagga docs HERE)).
+#__Configure a service to be managed__
++As a note, the lsb: option references services controlled via init scripts (/etc/init.d/whatever), there are more in depth modules that can do more advanced configuration/monitoring for some services under ocf: like what is used for IPaddr2 in the config line above.
++{CODE(colors=none)}
+crm configure primitive HA-Asterisk-Service lsb:asterisk op monitor interval=30s
+{CODE}
+#__Configure pacemaker to keep the services (IP and Asterisk) together__
++(By default pacemaker will distribute services across cluster nodes)
++{CODE(colors=none)}
+crm configure colocation Service-With-IP INFINITY: HA-Asterisk-Service HA-Asterisk-IP
+{CODE}
+#__Configure pacemaker to start the Asterisk service after the IP is started__
++{CODE(colors=none)}
+crm configure order Service-After-IP mandatory: HA-Asterisk-IP HA-Asterisk-Service
+{CODE}
+#__Finished__
++We now have a HA cluster that will maintain a HA IP address, and start the Asterisk service on the same node with the IP address. Syncing the asterisk service configs at this stage is up to the user. Something like DRBD could be used, though may be overkill for infrequently changing configs.
++{CODE(colors=none)}
+root@ha-asterisk-1:/etc/corosync# crm configure show
+node $id="739835698" ha-asterisk-1
+node $id="739835699" ha-asterisk-2
+primitive HA-Asterisk-IP ocf:heartbeat:IPaddr2 \\
+\tparams ip="44.24.255.49" cidr_netmask="32" \\
+\top monitor interval="30s"
+primitive HA-Asterisk-Service lsb:asterisk \\
+\top monitor interval="30s"
+colocation Service-With-IP inf: HA-Asterisk-Service HA-Asterisk-IP
+order Service-After-IP inf: HA-Asterisk-IP HA-Asterisk-Service
+property $id="cib-bootstrap-options" \\
+\tdc-version="1.1.10-42f2063" \\
+\tcluster-infrastructure="corosync" \\
+\tstonith-enabled="false" \\
+\tno-quorum-policy="ignore"
+rsc_defaults $id="rsc-options" \\
+\tresource-stickiness="100"
+{CODE}
+!Add a node to an existing cluster
+TODO.

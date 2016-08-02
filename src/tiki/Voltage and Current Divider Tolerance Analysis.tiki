@@ -1,0 +1,133 @@
+{toc}~np~\\(\\def\\tol#1#2#3{\\hbox{${#1}^{#2}_{#3}$}}\\)~/np~
+!!!Summary
+Having gone through the ((Resistor Network Tolerance Analysis)) work, now let's examine how imprecise resistances work when used with precise and imprecise sources in voltage and current divider network configurations.
+
+!!!Imprecise Source / Precise Resistance Voltage Divider
+Given the following circuit:
+::{SVG(scale="0.23" src="tiki-download_wiki_attachment.php?attId=41")}{SVG}::
+What is the value and tolerance of the output voltage?
+~np~$$\\begin{align}
+V_{out} &= 10 V \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 8.3333333333\\ldots V \\\\
+V_{out-} &= 9 V \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 7.4999999999\\ldots V \\\\
+V_{out+} &= 11 V \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 9.1666666666\\ldots V \\\\
+Error_- &= \\frac{7.4999999999\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = -10 \\% \\\\
+Error_+ &= \\frac{9.1666666666\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = +10 \\% \\\\
+\\therefore V_{out} &= 8\\frac{1}{3} V ±10 \\% \\\\
+\\end{align}$$~/np~
+From this it's plain to see that the tolerance of the power supply simply propagates to the output voltage.  The same holds true for asymmetrically toleranced voltage sources.
+
+!!!Precise Source / Imprecise Resistance Voltage Divider
+Given the following circuit:
+::{SVG(scale="0.23" src="tiki-download_wiki_attachment.php?attId=42")}{SVG}::
+What is the value and tolerance of the output voltage?
+~np~$$\\begin{align}
+V_{out} &= 10 V \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 8.3333333333\\ldots V \\\\
+V_{out--} &= 10 V \\times \\frac{4500 Ω}{950 Ω + 4500 Ω} = 8.2568807339\\ldots V \\\\
+Error_{--} &= \\frac{8.2568807339\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = -0.9174311926\\ldots \\% \\\\
+V_{out-+} &= 10 V \\times \\frac{5500 Ω}{950 Ω + 5500 Ω} = 8.5271317829\\ldots V \\\\
+Error_{-+} &= \\frac{8.5271317829\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = +2.3255813953\\ldots \\% \\\\
+V_{out+-} &= 10 V \\times \\frac{4500 Ω}{1050 Ω + 4500 Ω} = 8.1081081081\\ldots V \\\\
+Error_{+-} &= \\frac{8.1081081081\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = -2.7027027027\\ldots \\% \\\\
+V_{out++} &= 10 V \\times \\frac{5500 Ω}{1050 Ω + 5500 Ω} = 8.3969465648\\ldots V \\\\
+Error_{++} &= \\frac{8.3969465648\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = +0.7633587786\\ldots \\% \\\\
+\\therefore V_{out} &= \\tol{8\\frac{1}{3} V}{+2.3255813953\\ldots}{-2.7027027027\\ldots} \\% \\\\
+\\end{align}$$~/np~
+Once again we've managed to take symmetrically toleranced components and produce an asymmetrically toleranced result.  This should not be too surprising though, since the key operation in determining output voltage in a voltage divider is division.  When you start with unequal numerator and denominator values, and then you multiply the numerator and denominator by a variable (the tolerance), you are not going to get a linear response from that division.  Worse yet, in our case, the variable multiplying our values was not just a single variable, since the tolrances of R1 and R2 were different.
+
+A couple pointless calculations were made above to demonstrate that taking the negative or positive error of both resistors simultaneously to try and figure out a maximum error for the divider is not gonna work.  The extreme cases are where the top and bottom resistors swing to opposing extremes, and really upset the balance of voltage division in the circuit.
+
+Now, can we come up with a symbolic formula for determining the tolerance of a voltage divider with a precise source but imprecise resistances?
+~np~$$\\begin{align}
+R_{div} &= \\frac{R2}{R1 + R2} \\\\
+Error_+ &= \\frac{\\frac{R2_+}{R1_- + R2_+} - R_{div}}{R_{div}} \\\\
+Error_- &= \\frac{\\frac{R2_-}{R1_+ + R2_-} - R_{div}}{R_{div}} \\\\
+V_{out} &= \\tol{\\left(V1 \\times R_{div}\\right)}{Error_+}{Error_-} \\\\
+\\end{align}$$~/np~
+where ~np~\\(Rn_±\\)~/np~ represents the respective resistor value at its maximum (+) or minimum (-) tolerance, and the ~np~\\(Error_±\\)~/np~ terms need to be multiplied by 100 to represent percentages.  The same formula works just as well when asymmetrically toleranced resistors are used to build the voltage divider network.
+
+One very interesting thing to note here is that the voltage divider's ultimate voltage tolerance is tighter than the tolerance of either resistor used to build the divider.
+
+!!!Imprecise Source / Imprecise Resistance Voltage Divider
+Given the following circuit:
+::{SVG(scale="0.23" src="tiki-download_wiki_attachment.php?attId=43")}{SVG}::
+What is the value and tolerance of the output voltage?  If we take the positive voltage error from the resistor network and combine it with the positive voltage source error, this will yield the correct positive error in this type of problem.  Conversely, combining the negative voltage error from the resistor network with the negative voltage source error will yield the negative error in this problem:
+~np~$$\\begin{align}
+V_{out+} &= 11 V \\times \\frac{5500 Ω}{950 Ω + 5500 Ω} = 9.3798449612\\ldots V \\\\
+Error_+ &= \\frac{9.3798449612\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = +12.5581395348\\ldots \\% \\\\
+V_{out-} &= 9 V \\times \\frac{4500 Ω}{1050 Ω + 4500 Ω} = 7.2972972972\\ldots V \\\\
+Error_- &= \\frac{7.2972972972\\ldots V - 8.3333333333\\ldots V}{8.3333333333\\ldots V} = -12.4324324324\\ldots \\% \\\\
+\\therefore V_{out} &= \\tol{8\\frac{1}{3} V}{+12.5581395348\\ldots}{-12.4324324324\\ldots} \\% \\\\
+\\end{align}$$~/np~
+One thing to note here is that in our previous example the magnitude of the positive error was smaller than that of the negative error.  Here, by simply introducing a symmetrical tolerance voltage source, the positive error magnitude is now larger than the negative error magnitude.
+
+The changes between these tolerances and our previous tolerances are:
+~np~$$\\begin{align}
+12.5581395348\\ldots \\% - 2.3255813953\\ldots \\% &= 10.2325581395\\ldots \\% \\\\
+-12.4324324324\\ldots \\% - -2.7027027027\\ldots \\% &= -9.7297297297\\ldots \\% \\\\
+\\end{align}$$~/np~
+If you look at the positive and negative error delta numbers here, they can be expressed as:
+~np~$$Error_{\\Delta} = Error_{voltage} \\times (1 + Error_{divider})$$~/np~
+For example:
+~np~$$\\begin{align}
+Error_{\\Delta +} &= +0.1 \\times (1 + +0.023255813953\\ldots) \\\\
+&= 0.1023255813953\\ldots \\\\
+&= 10.2325581395\\ldots \\% \\\\
+&= Error_+ \\\\
+Error_{\\Delta -} &= -0.1 \\times (1 + -0.027027027027\\ldots) \\\\
+&= -0.0972972972973\\ldots \\\\
+&= -9.7297297297\\ldots \\% \\\\
+&= Error_- \\\\
+\\end{align}$$~/np~
+Using this corrective term we can now express the network error as:
+~np~$$Error_{net} = Error_{divider} + Error_{\\Delta}$$~/np~
+We can expand this and express it in a couple useful forms:
+~np~$$\\begin{align}
+Error_{net} &= Error_{divider} + Error_{voltage} \\times (1 + Error_{divider}) \\\\
+Error_{net} &= Error_{divider} + Error_{voltage} + Error_{voltage} \\times Error_{divider} \\\\
+\\end{align}$$~/np~
+The last term in the last equation explains (mathematically at least) why the positive error has a tendency to get larger while the negative error diminishes with these calculations.  Since in the negative error case both Error_* factors will be negative, they will work to bring the net error summation back up towards zero.  This seems illogical to me, but I cannot find fault in the math.  Now, to use these general equations to augment our practical formulas for solving this type of problem:
+~np~$$\\begin{align}
+R_{div} &= \\frac{R2}{R1 + R2} \\\\
+Error_{div+} &= \\frac{\\frac{R2_+}{R1_- + R2_+} - R_{div}}{R_{div}} \\\\
+Error_{div-} &= \\frac{\\frac{R2_-}{R1_+ + R2_-} - R_{div}}{R_{div}} \\\\
+Error_+ &= Error_{div+} + V1_{tol+} \\times (1 + Error_{div+}) \\\\
+Error_- &= Error_{div-} + V1_{tol-} \\times (1 + Error_{div-}) \\\\
+V_{out} &= \\tol{\\left(V1 \\times R_{div}\\right)}{Error_+}{Error_-} \\\\
+\\end{align}$$~/np~
+where ~np~\\(V1_{tol±}\\)~/np~ is the signed positive and negative tolerance of the voltage source.  This tolerance is +0.1 and -0.1 in our example.  Do not use the percentage value here.
+
+!!!Imprecise Source / Precise Resistance Current Divider
+Given the following circuit:
+::{SVG(scale="0.3" src="tiki-download_wiki_attachment.php?attId=45")}{SVG}::
+What are the values and tolerances of I1 and I2?  First of all, let's get the ideal currents:
+~np~$$\\begin{align}
+I1 &= I0 \\times \\frac{R2}{R1 + R2} \\\\
+&= 10 A \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 8\\frac{1}{3} A \\\\
+I2 &= I0 \\times \\frac{R1}{R1 + R2} \\\\
+&= 10 A \\times \\frac{1000 Ω}{1000 Ω + 5000 Ω} = 1\\frac{2}{3} A \\\\
+\\end{align}$$~/np~
+With those in hand, let's look at the extreme I1 cases:
+~np~$$\\begin{align}
+I1_+ &= I0_+ \\times \\frac{R2}{R1 + R2} \\\\
+&= 11 A \\times \\frac{5000 Ω}{1000 Ω + 5000 Ω} = 9\\frac{1}{6} A \\\\
+ErrorI1_+ &= \\frac{9\\frac{1}{6} A - 8\\frac{1}{3} A}{8\\frac{1}{3} A} = 10 \\% \\\\
+I1_- &= I0_- \\times \\frac{R2}{R1 + R2} \\\\
+&= 9 A \\times \\frac{5000 Ω}{1000Ω + 5000 Ω} = 7.5 A \\\\
+ErrorI1_- &= \\frac{7.5 A - 8\\frac{1}{3} A}{8\\frac{1}{3} A} = -10 \\% \\\\
+\\end{align}$$~/np~
+And lastly, the I2 extreme cases:
+~np~$$\\begin{align}
+I2_+ &= I0_+ \\times \\frac{R1}{R1 + R2} \\\\
+&= 11 A \\times \\frac{1000 Ω}{1000 Ω + 5000 Ω} = 1\\frac{5}{6} A \\\\
+ErrorI2_+ &= \\frac{1\\frac{5}{6} A - 1\\frac{2}{3} A}{1\\frac{2}{3} A} = 10 \\% \\\\
+I2_- &= I0_- \\times \\frac{R1}{R1 + R2} \\\\
+&= 9 A \\times \\frac{1000 Ω}{1000 Ω + 5000 Ω} = 1.5 A \\\\
+ErrorI2_- &= \\frac{1.5 A - 1\\frac{2}{3} A}{1\\frac{2}{3} A} = -10 \\% \\\\
+\\end{align}$$~/np~
+As is plainly seen, the current errors in each branch are directly driven by the tolerance of the current source itself.  This is also the case for asymmetrically toleranced current sources.
+
+!!!Precise Source / Imprecise Resistance Current Divider
+Given the following circuit:
+::{SVG(scale="0.3" src="tiki-download_wiki_attachment.php?attId=46")}{SVG}::
+What are the values and tolerances of I1 and I2?  Since we already have the ideal current values for each branch from the previous example let's jump straight to maximum/minimum current calculations for I1.  The maximum current will be when R2 is refusing the most current (highest R2 value) and R1 is begging for it (minimum R1 value).  The minimum will be the opposite.
+

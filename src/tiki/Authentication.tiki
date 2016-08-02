@@ -1,0 +1,23 @@
+!!!The Problem
+HamWAN would like to provide a HamWAN Configuration Portal to users.  Users can set things like their firewall policies there, which would be propagated to our edge routers.  Another use case would be configuring DNS in the HamWAN.net domain.  Many other examples exist, but the problem to solve is how to identify and authenticate users attempting to access this web service.
+
+!!!Possible Solutions
+{HTML()}<style>
+  .wikicell {
+    border: 1px solid black;
+  }
+</style>{HTML}
+||__Method__|__Pros__|__Cons__
+Install a certificate + private key on the user computer, use browser HTTPS with NULL cipher but non-NULL authentication. Implementation details: ((SSL without Encryption)) |Simple one-time config.  Reliable.|No modern browsers support NULL ciphers
+Install a certificate + private key on the user computer or some other LAN-connected machine, install a custom HTTP proxy and give it the key/cert to use for connections to *.HamWAN.net sites.|Still relies on a simple certificate for authentication.|No such known proxy exists and setting up conditional proxying rules in browsers in annoying.
+IP-based authentication if a user happens to have a static allocation|Zero configuration required on the user's part.|Any process or other user having access to the intended user's IP address(es) will have full control over the user's authenticated resources.
+Diffie-Hellman based signed communication using a custom JavaScript library, with authentication possibly initiated using a One Time Password|Generic solution for all browsers.|No such library is known to exist (research possibly inaccurate).  May not be able to sign all HTTP requests.  OTP management could be complicated.
+Custom IPsec policy installed right on the user's workstation to perform end-to-end IPsec(AH) when talking to our anycast HTTP addresses on port 80.|Based upon simple certificates.  Well supported in OSes.|Possibly complicated to configure in OSes.  Services of other kinds (on other IPs, using other ports or even UDP) will not benefit without re-config.  Unknown if user's credentials would be visible to server-side application once the packets leave the IPsec(AH) layer.
+Kerberos based browser authentication.|Kerberos is broadly supported in more than just browsers for authentication.|Protocol may not be encryption-free, analysis is required.  Complicated to configure.  Very sensitive to clock synchronization.
+Secure Remote Password|[http://en.wikipedia.org/wiki/Secure_Remote_Password_protocol]|Unknown||
+
+!!!Secure Shell with None Cipher
+There is a project which (re-)introduces this feature, as well as others (such as dynamic windowing):
+[http://www.psc.edu/index.php/hpn-ssh]
+[http://hpnssh.sourceforge.net/]
+

@@ -1,0 +1,28 @@
+#All HamWAN entities live in the HamWAN.net domain?
+#Primary name server for clients is the uplink modem, which then re-directs for anything other than the zones it knows about?
+#There need to be reciprocal DNS servers on the normal Internet which point back into HamWAN IP space.
+#How will new domains like HamWAN.tv be introduced?  Asking all clients to update DNS forwarding rules is painful.
+#At no point must the design take an Internet dependency.
+
+
+!!Client DNS
+
+For client machines that want to connect to both HamWAN and the internet, it gets tricky maintaining the appearance of availability for both.  The problem is there's no way to tell a client to use one set of DNS resolvers or another based on the namespace they want to lookup.  Such tricks can typically be used on the resolvers themselves, but not on the clients.
+
+If the client is using internet-based DNS resolvers, HamWAN will appear to be down when their internet is down, even though they may still be connected to HamWAN's IP space over their RF link.  If they use HamWAN-based resolvers, the opposite will be true.  Luckily, just about every client machine supports the ability to list more than one DNS resolver to use.  If one is not responsive, it will use another.
+
+Therefore, the best practice may be to have each client use a resolver list with at least one internet-based resolver and one HamWAN-based resolver.
+
+
+!!DNS Resolvers
+
+In order to help alleviate internet dependencies for clients, HamWAN should maintain several caching DNS resolvers at key cell sites that recurse for users of the RF network.  They should also maintain a slave copy of the hamwan.net zone file to continue serving requests in that namespace when the root and gTLD servers are unreachable.
+
+One unsolved question at the moment is how we should address the resolvers (and other network services).  Should we maintain a list of IPs for clients to choose from when using these services, or should we create an anycast IP space that allows all clients to use the same IP and have the network decide where the requests get routed?  Or should we do both?
+
+
+!!NS Servers
+
+The zone files for the namespaces we control should probably by mastered on the HamWAN network and not with an internet-based host since it's likely that future automation programs will need to modify the data and they should be able to do so without an internet dependency.  However, any internet-based NS servers we use can have slave copies of the zone file and the public delegation records can be pointed at them.  This would allow requests sourced from the internet to connect to the internet-based NS servers without connecting to the HamWAN network.  However, clients on the HamWAN network should never need to see those delegation records because the HamWAN-based DNS resolvers will have a copy of the entire zone file anyway.
+
+

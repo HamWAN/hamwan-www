@@ -1,0 +1,21 @@
+While PSDR's goal is to design a robust, scalable, service-agnostic network, we are often asked "what services does the network provide?" It is mostly left to the users of the network to provide application-level services. However, PSDR does support a few services in support of the network. Here is a best-effort list of network- and user-provided services.
+
+!Network-provided Services
+* IPv4 routing
+* AMPR routing (we maintain the tunnels at our edge routers)
+* DNS - Recursive (44.24.244.1 and 44.24.245.1)
+* DNS - Authoritative (44.24.244.2 and 44.24.245.2)
+* Administration portal - http://portal.hamwan.org/ or https://encrypted.hamwan.org/
+!!Future Possibilities
+* IPv6 routing (in progress)
+* Radius authentication
+* IRC
+
+!User-provided Services
+!!K7NVH
+* Statrum-1 NTP server time.k7nvh.com
+* Entropy service http://entropy.k7nvh.com/
+!!KD7LXL
+* APRS-IS Tier2 server http://northwest.aprs2.net:14501/
+* BALDI/VBALDI igate http://baldi-aprs.kd7lxl.hamwan.net/
+

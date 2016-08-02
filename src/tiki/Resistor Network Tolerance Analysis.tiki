@@ -1,0 +1,158 @@
+{toc}~np~\\(\\def\\tol#1#2#3{\\hbox{${#1}^{+{#2}}_{-{#3}}$}}\\)~/np~
+!!!Summary
+So this is a little embarrasing, but I've forgotten how to calculate the error terms through a resistor network.  I've been unable to find anything online on the subject, so perhaps I suck at googling.  The closest thing my textbooks had was sensitivity analysis, which is not quite the same thing as it focuses on one component instead of getting an error term for the network as a whole.  So here goes my attempt at re-inventing the wheel and deriving the rules for error propagation through an electrical network.
+
+!!!Series Tolerance
+Given the following circuit:
+
+::{SVG(width="7em" height="20em" src="tiki-download_wiki_attachment.php?attId=7")}{SVG}::
+
+What is the resulting resistance and tolerance?  The resistance is easy: 1kΩ + 5kΩ = 6kΩ.  The tolerance is a bit tricky, so let's derive the general rule from this example.
+
+The maximum value of R1 given the maximum 5% error is 1000Ω + (1000Ω * 0.05) = 1050Ω.  The maximum value of R2 given the maximum 10% error is 5000Ω + (5000Ω * 0.1) = 5500Ω.  In this worst case scenario the resistance of the network is 1050Ω + 5500Ω = 6550Ω.  This is 550Ω away from the ideal 6kΩ.  This is an error of 550Ω / 6000Ω = 9.1666...%.
+
+Therefore the network's resulting resistance and tolerance is 6kΩ ±9.1666...%.
+
+Each resistor contributes a certain portion of the total final resistance.  It also contributes an error, weighted by its resistance contribution, to the final error.  R1 contributes 1kΩ / 6kΩ = 1/6th of the final error.  By similar math, R2 contributes 5/6ths of the final error.  If we simply multiply the device weights by their error terms, and add it up, we get the correct network error term: (1/6)*0.05 + (5/6)*0.10 = 9.1666...%!
+
+Therefore, for series networks, the tolerance is calculated by:~np~$$R_{net} = \\sum\\limits_{n=1}^N R_n$$
+$$T_{net} = \\sum\\limits_{n=1}^N \\left( \\frac{R_n}{R_{net}} \\right) \\times T_n$$~/np~where:
+{DIV(type=blockquote)}\\(n\\) is the resistor number
+\\(R_n\\) is the ideal value of the nth resistor
+\\(R_{net}\\) is the ideal resistance value of the network
+\\(T_n\\) is the tolerance of the nth resistor
+\\(N\\) is the total number of resistors in series
+\\(T_{net}\\) is the tolerance value of the network{DIV}
+
+Let's play with this new found formula to verify it really works on a 3-element network:
+
+::{SVG(width="7em" height="30em" src="tiki-download_wiki_attachment.php?attId=21")}{SVG}::
+
+First, numerically, Rnet = 1kΩ + 5kΩ + 3kΩ = 9kΩ.  Worst case resistance = 1050Ω + 5500Ω + 5500Ω + 3030Ω = 9580Ω.  Error = 580Ω / 9000Ω = 6.444...%.
+
+And now, using the formula: (1/9)*0.05 + (5/9)*0.10 + (3/9)*0.01 = 6.444...%.  And we have success!
+
+!!!Parallel Tolerance
+Given the following circuit:
+
+::{SVG(scale="0.25" src="tiki-download_wiki_attachment.php?attId=20")}{SVG}::
+
+What is the resulting resistance and tolerance?
+
+The resistance is:
+$$\\frac{1}{\\frac{1}{1000}+\\frac{1}{5000}} = 833\\frac{1}{3}Ω$$
+Taking the worst possible values once again, the worst case resistance is:
+$$\\frac{1}{\\frac{1}{1050}+\\frac{1}{5500}} = 881.679389\\ldotsΩ$$
+This is a difference of 48.3460559797...Ω from the ideal, and represents a 5.8015...% error.
+
+Just for fun, let's also take a look at the opposite error bound, with minimum values involved.  The resistance is:
+$$\\frac{1}{\\frac{1}{950}+\\frac{1}{4500}} = 784.4036697\\ldotsΩ$$
+This is a difference of 48.9296636...Ω from the ideal, and represents a 5.8715596...% error.
+
+Therefore, the network's resistance and tolerance is \\(\\tol{833\\frac{1}{3}Ω}{5.8015}{5.8716}\\%\\).
+
+Well this is interesting.  The positive and negative maximal errors are not the same!  By combining these error-symmetrical components into a parallel network we've produced a resistance with asymmetrical error bounds.  This arises from the way resistances interact in a parallel circuit.  A linear change to R1 or R2 results in a non-linear change to the resulting network resistance.  This is shown in the graph below:
+::{R()}curve(y<-1/((1/x)+(1/5000)), 0, 20000, xlab="R1 (ohms)", ylab="Rnet (ohms)"){R}::
+As the value of R1 is varied from 0 to 20kΩ, the resulting value of the network's resistance (Rnet) is clearly non-linear.  Furthermore, the reason that the difference between positive and negative tolerance is so small in our example is because given the 5% resistor tolerance around the 1kΩ point, we've only travelled along the curve a very short distance.  Over this short distance, the curve is nearly linear, but the numbers reveal the true story.  Just for fun, here is the exact curve we've travelled in this 5% tolerance range.  Can you spot the non-linearity?  I sure can't!
+::{R()}curve(y<-1/((1/x)+(1/5000)), 950, 1050, xlab="R1 (ohms)", ylab="Rnet (ohms)"){R}::
+Here is the R2 curve, drawn to scale:
+::{R()}curve(y<-1/((1/1000)+(1/x)), 4500, 5500, xlab="R2 (ohms)", ylab="Rnet (ohms)"){R}::
+Given the larger 10% tolerance of R2 the non-linear network behavior is more pronounced, and is actually visible in the above graph.
+
+Despite the higher level concepts of linear/non-linear system behavior, there is a more concrete way to interpret the first graph, and understand why a symmetrical tolerance turns into an asymmetrical response.  Let's assume R1's value is nominally 10kΩ (in the center of the graph).  As it extends into the positive tolerance region (R1 increases) the resistance of the network does not increase very quickly relative to the speed of R1's increase.  This is indicated by a somewhat low slope (flat curve portion) in this positive tolerance region.  The network's resistance is not as sensitive to changes of R1's value here.  Therefore, the network's positive region tolerance is not so extreme.  Now if we look at the negative tolerance region of R1, where its value has decreased into maybe the 5kΩ range, you can see the slope of the graph is much steeper here.  This means that for each incremental change in R1's value, there is a much larger corresponding change in the value of the network (as compared to the positive region response).  In the negative region the network is more sensitive to R1's value.  This causes the negative tolerance region of the network to be larger than the positive tolerance region.
+
+Putting mathematics aside and focusing on just electrons, in the positive tolerance region, R1 becomes so resistive that it conducts very few electrons compared to R2 (assuming tolerance is way higher than 5% for the purposes of this disucssion).  As R1 approaches infinity it makes itself irrelevant to the circuit and has no effect on its value since it is not conducting anything.  In the negative region R1 starts conducting a disproportionately large amount of current as its value drops.  This makes R2 irrelevant and R1 becomes the driving definition of the network's value.  As R1 approaches zero, R2's role is eliminated.  The reason for the asymmetry is that it takes a much larger swing in positive tolerance region for R1 to eliminate itself from the circuit (10kΩ → ∞), than it does in the negative tolerance region for R1 to make R2 irrelevant (10kΩ → 0).  So again, the network's value is more sensitive to R1's changes in the negative region than in the positive region.  So even though R1 is swinging symmetrically through its tolerance range, the network's sensitivity is responding asymmetrically.
+
+With that horse beaten to death, let us now establish a repeatable technique for calculating parallel network tolerances:
+~np~$$R_{net} = \\frac{1}{\\sum\\limits_{n=1}^N \\frac{1}{R_n}}$$~/np~
+~np~$$T_{net} = \\frac{\\frac{1}{\\sum\\limits_{n=1}^N \\frac{1}{\\left(1 + T_n\\right) \\times R_n}} - R_{net}}{R_{net}}$$~/np~
+where:
+{DIV(type=blockquote)}\\(n\\) is the resistor number
+\\(R_n\\) is the ideal value of the nth resistor
+\\(R_{net}\\) is the ideal resistance value of the network
+\\(T_n\\) is the tolerance of the nth resistor
+\\(N\\) is the total number of resistors in series
+\\(T_{net}\\) is the tolerance value of the network{DIV}
+In order to get positive and negative tolerances out of the second formula, simply use positive and negative values of \\(T_n\\).  Let's verify the above example works out the same using these formulas:
+~np~$$
+\\begin{align}
+R_{net} &= \\frac{1}{\\frac{1}{1000} + \\frac{1}{5000}}
+\\\\ &= \\frac{1}{0.001 + 0.0002}
+\\\\ &= \\frac{1}{0.0012}
+\\\\ &= 833\\frac{1}{3}Ω
+\\end{align}
+$$~/np~
+~np~$$
+\\begin{align}
+T_{net+} &= \\frac{\\frac{1}{\\frac{1}{\\left(1 + 0.05\\right) \\times 1000} + \\frac{1}{\\left(1 + 0.10\\right) \\times 5000}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{1.05 \\times 1000} + \\frac{1}{1.10 \\times 5000}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{1050} + \\frac{1}{5500}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{0.00095238095\\ldots + 0.00018181818\\ldots} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{0.00113419913} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{881.6793925772\\ldots - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{48.3460592438\\ldots}{833\\frac{1}{3}}
+\\\\ &= 0.05801527109\\ldots
+\\\\ &= 5.801527109\\ldots\\%
+\\end{align}
+$$~/np~
+~np~$$
+\\begin{align}
+T_{net-} &= \\frac{\\frac{1}{\\frac{1}{\\left(1 - 0.05\\right) \\times 1000} + \\frac{1}{\\left(1 - 0.10\\right) \\times 5000}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{0.95 \\times 1000} + \\frac{1}{0.90 \\times 5000}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{950} + \\frac{1}{4500}} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{0.00105263158\\ldots + 0.00022222222\\ldots} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{\\frac{1}{0.0012748538} - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{784.4036704444\\ldots - 833\\frac{1}{3}}{833\\frac{1}{3}}
+\\\\ &= \\frac{-48.9296628889\\ldots}{833\\frac{1}{3}}
+\\\\ &= -0.05871559546\\ldots
+\\\\ &= -5.871559546\\ldots\\%
+\\end{align}
+$$~/np~
+
+These numbers are a match for what was calculated before.  This is no surprise, since the formulas are a mere formalization of the same technique used before to find positive and negative tolerance.  If you can think of a shorter method, please let me know!  Now let's apply the technique to the 3-resistor parallel network below:
+
+::{SVG(scale="0.34" src="tiki-download_wiki_attachment.php?attId=19")}{SVG}::
+
+~np~$$
+\\begin{align}
+R_{net} &= \\frac{1}{\\frac{1}{1000} + \\frac{1}{5000} + \\frac{1}{3000}}
+\\\\ &= \\frac{1}{0.001 + 0.0002 + 0.000333\\ldots}
+\\\\ &= \\frac{1}{0.0015333\\ldots}
+\\\\ &= 652.1739130434\\ldotsΩ
+\\end{align}
+$$~/np~
+~np~$$
+\\begin{align}
+T_{net+} &= \\frac{\\frac{1}{\\frac{1}{\\left(1 + 0.05\\right) \\times 1000} + \\frac{1}{\\left(1 + 0.10\\right) \\times 5000}+ \\frac{1}{\\left(1 + 0.01\\right) \\times 3000}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{1.05 \\times 1000} + \\frac{1}{1.10 \\times 5000} + \\frac{1}{1.01 \\times 3000}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{1050} + \\frac{1}{5500} + \\frac{1}{3030}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{0.00095238095\\ldots + 0.00018181818\\ldots + 0.00033003300\\ldots} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{0.00146423213} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{682.95182130718\\ldots - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{30.77790826378\\ldots}{652.1739130434\\ldots}
+\\\\ &= 0.04719279267\\ldots
+\\\\ &= 4.719279267\\ldots\\%
+\\end{align}
+$$~/np~
+~np~$$
+\\begin{align}
+T_{net-} &= \\frac{\\frac{1}{\\frac{1}{\\left(1 - 0.05\\right) \\times 1000} + \\frac{1}{\\left(1 - 0.10\\right) \\times 5000}+ \\frac{1}{\\left(1 - 0.01\\right) \\times 3000}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{0.95 \\times 1000} + \\frac{1}{0.90 \\times 5000} + \\frac{1}{0.99 \\times 3000}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{\\frac{1}{950} + \\frac{1}{4500} + \\frac{1}{2970}} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{0.00105263158\\ldots + 0.00022222222\\ldots + 0.00033670033\\ldots} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{\\frac{1}{0.00161155413} - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{620.51902656226\\ldots - 652.1739130434\\ldots}{652.1739130434\\ldots}
+\\\\ &= \\frac{-31.65488648114\\ldots}{652.1739130434\\ldots}
+\\\\ &= -0.04853749260\\ldots
+\\\\ &= -4.853749260\\ldots\\%
+\\end{align}
+$$~/np~
+Therefore, the network's resistance and tolerance is ~np~\\(\\tol{652.1739130434\\ldots Ω}{4.719279267\\ldots}{4.853749260\\ldots} \\%\\)~/np~.
+
+As you can see the tolerances got tighter with the introduction of that 1% resistor.  The only thing to be learned here is that as more network current flows through tighter tolerance resistors, the network becomes more tightly toleranced as a result.  Looking at tolerance calculations from a current-distribution standpoint may be a good basis for coming up with a simpler method.
+
+!!!Optimizing Network Tolerance
+A few rules of thumb:
+#For series networks, have the largest valued resistances carry the tightest tolerances
+#For parallel networks, have the lowest valued resistances carry the tightest tolerances
+#For series and parallel networks, where all components are of the same tolerance, the network is also of the same tolerance (not proven above)

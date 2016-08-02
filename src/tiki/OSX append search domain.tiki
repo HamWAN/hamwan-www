@@ -1,0 +1,32 @@
+It seems in OSX the search domain will not be appended to hostnames that contain two or more labels separated by dots. For example pinging the the following does not work
+*ping snodem.etiger
+To solve this, do the following below:
+
+#In Yosemite (10.10.5) add the "hamwan.net" & "hamwan.org" to the search domains in the GUI
+#sudo vi /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+**Then find the line:
+**{CODE()}
+<dict>
+     <array>
+          <string>/usr/sbin/mDNSResponder</string>
+     </array>
+{CODE}
+#ADD:
+**{CODE()}
+<dict>
+     <array>
+          <string>/usr/sbin/mDNSResponder</string>
+          <string>-AlwaysAppendSearchDomains</string>
+     </array>
+{CODE}
+#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+#Make sure you DNS cache is clean (one of the following should work)
+**sudo killall -HUP mDNSResponder
+**sudo discoveryutil mdnsflushcache
+**sudo dscacheutil -flushcache
+#Test:
+**ping snodem.etiger
+
+Referenced from:
+http://apple.stackexchange.com/questions/140160/alternative-to-alwaysappendsearchdomains-on-yosemite

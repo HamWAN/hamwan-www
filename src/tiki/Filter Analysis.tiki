@@ -1,0 +1,4 @@
+!!!L-com BPF5800A
+::{img attId="64"}::
+The Display Line ("DL") level is the no-loss reference level of -1.70dBm.  The marker level after the filter has been inserted is -2.50dBm.  Therefore insertion loss looks like 0.8dB.  The corners look like 5.7GHz and 5.9GHz, roughly.  Which means 200MHz of bandwidth.  Kind of divergent from the specifications ({file type="attachment" name="DS_BPF5800A.PDF"}).  The skirts look like they fall 30dB/200MHz.
+

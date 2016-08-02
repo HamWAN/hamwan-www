@@ -1,0 +1,11 @@
+!Overview
+When HamWAN routing fails, it's useful to have a secondary communication channel into the network.  This is called out-of-band (or OOB for short) communication.  HamWAN doesn't pass regular network traffic over OOB links, only control information (eg: SSH) is allowed in most cases.
+
+!Configuration
+{CODE(caption="Configure OOB")}
+/ip route vrf add routing-mark=OOB interfaces=<OOB interface>
+/ip address add interface=<OOB interface> address=<OOB IP>
+/ip route add routing-mark=OOB gateway=<OOB default gateway>
+/ip firewall mangle add chain=output action=mark-routing new-routing-mark=OOB src-address=<OOB IP>
+{CODE}
+

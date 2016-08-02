@@ -1,0 +1,21 @@
+::{SVG(scale="20" src="tiki-download_wiki_attachment.php?attId=127")}{SVG}::
+
+::{SVG(scale="20" src="tiki-download_wiki_attachment.php?attId=131")}{SVG}::
+
+!!!Notes from an ignoramus (aka Ryan)
+Sectors need:
+/interface wireless set default-forwarding=no 0
+/ip ipsec proposal set enc-algorithm=null disabled=no 0
+set up yo dhcp for 100.64.0.1/10
+
+Let's assume our client has lan ip 100.64.0.2
+Cell config
+/ip ipsec peer add address=100.64.0.2/10 auth-method=rsa-signature certificate=<CERT HERE> enc-algorithm=null disabled=no comment=K0RET
+/ip ipsec policy add src-address=0.0.0.0/0 dst-address=44.34.133.1 sa-src-address=100.64.0.1 sa-dst-address=100.64.0.2 tunnel=yes action=none proposal=default
+
+Client config
+/ip ipsec peer add address=100.64.0.1/10 auth-method=rsa-signature certificate=<CERT HERE> enc-algorithm=null disabled=no comment=K0RET
+/ip ipsec policy add src-address=44.34.133.1 dst-address=0.0.0.0/0 sa-src-address=100.64.0.2 sa-dst-address=100.64.0.1 tunnel=yes action=none proposal=default
+to-do: BGP config on both ends
+to-do: script to create ipsec policy on client using the proper sa-src-address as assigned by dhcp
+

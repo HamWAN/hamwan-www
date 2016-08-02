@@ -1,0 +1,13 @@
+!Accessing the Underlying Linux
+# Install ROS on some form of media you control
+## Option: ROS x86 in a VM
+## Option: Some Routerboards can boot from CF cards
+# Shut down ROS
+# Mount the filesystem you just installed ROS on
+# sudo touch /nova/etc/devel-login
+# Unmount
+# Boot ROS
+# Login
+## Username: devel
+## Passwod: ''blank''
+# Use Busybox shell!

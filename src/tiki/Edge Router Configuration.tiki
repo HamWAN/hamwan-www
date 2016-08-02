@@ -1,0 +1,381 @@
+{CODE(caption="Sample Configuration from Seattle-ER1 Edge Router")}
+/interface bridge
+add name=LAN protocol-mode=none
+add name=OPP protocol-mode=none
+add name=loopback0 protocol-mode=none
+/interface ethernet
+set [ find default-name=ether1 ] speed=1Gbps
+set [ find default-name=ether2 ] name=ether3 speed=1Gbps
+set [ find default-name=ether3 ] comment=Westin-QueenAnne name=ether4 speed=1Gbps
+set [ find default-name=ether4 ] comment=Westin-Gold name=ether5
+/interface ipipv6
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=2604:5000:20:2::1 mtu=1460 name=ipipv6-1 remote-address=2604:5000:20:2::2
+/interface 6to4
+add comment=Seattle-ER1 local-address=209.189.196.68 mtu=1280 name=sit2 remote-address=173.225.18.18
+/interface ipip
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=44.24.246.1 mtu=1456 name=OPP-K7VE remote-address=44.24.246.3
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=44.24.246.1 mtu=1456 name=OPP-KD7KAB remote-address=44.24.246.9
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=44.24.246.1 mtu=1456 name=OPP-KD7LXL remote-address=44.24.246.11
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=44.24.246.1 mtu=1456 name=OPP-KF4GTA remote-address=44.24.246.7
+add clamp-tcp-mss=no dscp=0 !keepalive local-address=44.24.246.1 mtu=1456 name=OPP-VE7ASN remote-address=44.24.246.15
+add clamp-tcp-mss=no comment="Seattle - AE7SJ.  MTU set for ESP+NAT-T." dscp=0 !keepalive local-address=209.189.196.68 mtu=1418 name=ipip1 \\
+    remote-address=10.10.10.2
+add clamp-tcp-mss=no comment="Seattle - K7NVH.  MTU set for ESP+NAT-T." dscp=0 !keepalive local-address=209.189.196.68 mtu=1418 name=ipip2 \\
+    remote-address=10.1.10.3
+add clamp-tcp-mss=no comment="Seattle - Corvallis.  MTU set for IPsec(AH)." dscp=0 !keepalive local-address=209.189.196.68 mtu=1456 name=ipip3 \\
+    remote-address=198.178.136.80
+add clamp-tcp-mss=no comment="Seattle - KORET - MemHamWAN. MTU set for ESP+NAT-T." dscp=0 !keepalive local-address=209.189.196.68 mtu=1418 name=\\
+    ipip4 remote-address=10.0.5.2
+add clamp-tcp-mss=no comment="Seattle - Baldi.  MTU set for ESP+NAT-T." dscp=0 !keepalive local-address=209.189.196.68 mtu=1418 name=ipip6 \\
+    remote-address=192.168.1.50
+add clamp-tcp-mss=no comment="Seattle - Tukwila.  MTU set for IPsec(AH)." dscp=0 !keepalive local-address=209.189.196.68 mtu=1456 name=ipip7 \\
+    remote-address=173.225.18.18
+/ip neighbor discovery
+set ether4 comment=Westin-QueenAnne
+set ether5 comment=Westin-Gold
+set ipip1 comment="Seattle - AE7SJ.  MTU set for ESP+NAT-T."
+set ipip2 comment="Seattle - K7NVH.  MTU set for ESP+NAT-T."
+set ipip3 comment="Seattle - Corvallis.  MTU set for IPsec(AH)."
+set ipip4 comment="Seattle - KORET - MemHamWAN. MTU set for ESP+NAT-T."
+set ipip6 comment="Seattle - Baldi.  MTU set for ESP+NAT-T."
+set ipip7 comment="Seattle - Tukwila.  MTU set for IPsec(AH)."
+set sit2 comment=Seattle-ER1
+/interface bonding
+add lacp-rate=1sec mode=active-backup name=bond1 primary=ether1 slaves=ether1,ether3 transmit-hash-policy=layer-2-and-3
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip ipsec policy group
+add name=OPP-K7VE
+add name=OPP-KD7LXL
+add name=OPP-NQ1E
+add name=OPP-KF4GTA
+add name=OPP-KD7KAB
+add name=OPP-VE7ASN
+/ip ipsec proposal
+set [ find default=yes ] enc-algorithms=3des
+add auth-algorithms=null name=vpn-esp
+add auth-algorithms=md5 enc-algorithms=null name=vpn-ah
+/ip pool
+add name=OPP ranges=44.24.246.0/23
+add name=OVPN ranges=10.20.30.2-10.20.30.254
+add name=dhcp ranges=44.24.241.110
+/ip dhcp-server
+add address-pool=dhcp interface=LAN name=dhcp1
+/port
+set 0 name=serial0
+set 1 name=serial1
+/ppp profile
+set 0 bridge=LAN local-address=OVPN remote-address=OVPN
+/routing bgp instance
+set default as=<YOUR AS NUMBER> client-to-client-reflection=no out-filter=BGP-Announce redistribute-connected=yes redistribute-other-bgp=yes router-id=\\
+    209.189.196.68
+add name=OPP out-filter=OPP-OUT redistribute-connected=yes redistribute-ospf=yes redistribute-other-bgp=yes redistribute-static=yes router-id=\\
+    44.24.246.0
+/routing ospf instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 in-filter=AMPR-default out-filter=AMPR-default redistribute-bgp=as-type-1 \\
+    redistribute-connected=as-type-1 redistribute-other-ospf=as-type-1 redistribute-static=as-type-1 router-id=44.24.248.41
+/routing ospf-v3 instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 redistribute-connected=as-type-1 redistribute-other-ospf=as-type-1 \\
+    redistribute-static=as-type-1 router-id=44.24.248.41
+/snmp community
+set [ find default=yes ] addresses=44.24.240.0/20 name=hamwan
+/system logging action
+set 3 remote=44.24.244.8
+/interface bridge port
+add bridge=LAN interface=ether4
+add bridge=LAN interface=ether5
+/ip address
+add address=209.189.196.68/28 interface=bond1 network=209.189.196.64
+add address=44.24.242.16/32 interface=ipip1 network=44.24.242.17
+add address=44.24.242.18/32 interface=ipip2 network=44.24.242.19
+add address=44.24.242.21/32 interface=ipip3 network=44.24.242.20
+add address=44.34.128.2/32 interface=ipip4 network=44.34.128.1
+add address=44.24.242.14/32 interface=ipip6 network=44.24.242.15
+add address=44.24.241.97/28 interface=LAN network=44.24.241.96
+add address=44.24.242.45/32 interface=ipip7 network=44.24.242.44
+add address=44.24.246.1/32 interface=OPP network=44.24.246.1
+add address=44.24.246.0/32 interface=OPP-KF4GTA network=44.24.246.6
+add address=44.24.221.2/32 interface=OPP network=44.24.221.2
+add address=44.24.246.0/32 interface=OPP-KD7KAB network=44.24.246.8
+add address=44.24.246.0/32 interface=OPP-KD7LXL network=44.24.246.10
+add address=44.24.246.0/32 interface=OPP-K7VE network=44.24.246.2
+add address=44.24.221.3/32 interface=OPP network=44.24.221.3
+add address=44.24.248.41/32 interface=loopback0 network=44.24.248.41
+add address=44.24.246.0/32 interface=OPP-VE7ASN network=44.24.246.14
+/ip dhcp-server network
+add address=44.24.241.96/28 dns-server=44.24.244.1 gateway=44.24.241.97
+/ip dns
+set servers=44.24.244.1,44.24.245.1
+/ip firewall address-list
+add address=44.24.241.128/28 comment="VPN pool" list=whitelist
+add address=50.46.215.96 comment=K7NVH list=whitelist
+add address=209.66.65.66 comment=Osburn list=whitelist
+add address=173.10.122.204/30 comment=eo list=whitelist
+add address=73.53.79.120 comment=eo list=whitelist
+add address=98.237.174.58 comment=tom list=whitelist
+add address=70.89.113.113 comment=NQ1E list=whitelist
+add address=44.24.244.2 list=auth_dns_servers
+add address=44.24.245.2 list=auth_dns_servers
+add address=44.24.244.4 list=ntp_servers
+add address=44.24.245.4 list=ntp_servers
+add address=44.0.0.1 comment=ampr.org list=UCSD
+add address=128.54.0.0/16 list=UCSD
+add address=132.239.0.0/16 list=UCSD
+add address=137.110.0.0/16 list=UCSD
+add address=169.228.0.0/16 list=UCSD
+add address=44.24.242.23 list=APRSC
+add address=44.24.240.201 list=APRSC
+add address=44.24.244.5 list=PORTAL
+add address=44.24.245.5 list=PORTAL
+add address=44.24.244.6 list=PORTAL
+add address=44.24.245.6 list=PORTAL
+add address=44.24.255.128/25 list=AE7SJ
+add address=44.24.255.0/25 list=K7NVH
+add address=44.24.240.173 list=AE7Q
+add address=71.191.86.161 comment="manual entry after hundreds of brute force ssh login attemps" list=blacklist
+add address=125.212.202.43 comment="manual entry after hundreds of brute force ssh login attemps" list=blacklist
+add address=44.24.241.32/28 comment=Haystack list=whitelist
+add address=209.189.196.64/28 comment="Threshold handoff LAN" list=whitelist
+add address=27.72.64.66 comment="manual entry after hundreds of brute force ssh login attemps" list=blacklist
+add address=104.233.116.161 list=blacklist
+add address=212.91.171.178 list=blacklist
+/ip firewall filter
+add chain=input comment="Allow everything from our whitelist" src-address-list=whitelist
+add action=drop chain=input comment="Drop everything from out blacklist" src-address-list=blacklist
+add chain=input comment="Allow ipip to Local" protocol=ipencap
+add chain=input comment="Allow icmp to Local" protocol=icmp
+add chain=input comment="Allow related to Local" connection-state=related
+add chain=input comment="Allow SSH to Local" dst-port=222 protocol=tcp
+add chain=input comment="Allow SSTP to Local" dst-port=443 protocol=tcp
+add chain=input comment="Allow WinBox to Local from whitelist" dst-port=8291 protocol=tcp src-address-list=whitelist
+add chain=input comment="Allow 6to4 tunnel from Tukwila-ER1" protocol=ipv6 src-address=173.225.18.18
+add chain=input comment="Allow ipsec-esp to Local" protocol=ipsec-esp
+add chain=input comment="Allow ipsec-ah to Local" protocol=ipsec-ah
+add chain=input comment="Allow ipsec to Local" dst-port=500 protocol=udp
+add chain=input comment="Allow ipsec to Local" dst-port=4500 protocol=udp
+add chain=input comment="Allow ospf to Local" protocol=ospf
+add chain=input comment="Allow bgp to Local" dst-port=179 protocol=tcp
+add chain=input comment="Allow bgp responses" protocol=tcp src-port=179
+add chain=input comment="Allow NTP Responses" dst-port=123 protocol=udp src-address-list=ntp_servers
+add action=log chain=input connection-state=established disabled=yes
+add chain=input comment="Allow established to Local" connection-state=established
+add chain=input comment="Allow SNMP" dst-port=161 protocol=udp src-address=44.24.240.0/20
+add action=drop chain=input comment="Drop unwanted packets to Local"
+add chain=forward comment="Allow established to HamWAN" connection-state=established
+add chain=forward comment="Allow related to HamWAN" connection-state=related
+add chain=forward comment="Allow everything from our whitelist" src-address-list=whitelist
+add action=drop chain=forward comment="Drop everything from our blacklist" src-address-list=blacklist
+add chain=forward comment="Allow icmp to HamWAN" protocol=icmp
+add chain=forward comment="Allow DNS to specified authoritative nameservers" dst-address-list=auth_dns_servers dst-port=53 protocol=udp
+add chain=forward comment="Allow DNS to specified authoritative nameservers" dst-address-list=auth_dns_servers dst-port=53 protocol=tcp
+add chain=forward comment="Allow NTP to specified timeservers" dst-address-list=ntp_servers dst-port=123 protocol=udp
+add chain=forward comment="Allow HTTP and HTTPS to specified PORTAL servers" dst-address-list=PORTAL dst-port=80,443 protocol=tcp
+add chain=forward comment="Allow SSH to HamWAN" dst-port=22 protocol=tcp
+add chain=forward comment="Allow WinBox to HamWAN from whitelist" dst-port=8291 protocol=tcp src-address-list=whitelist
+add action=jump chain=forward comment="APRSC Firewall Rules - See thayward" dst-address-list=APRSC jump-target=APRSC
+add chain=APRSC dst-port=8080,14501-14505,10142,14577-14580,24580 protocol=tcp
+add chain=APRSC dst-port=10152,14577-14580,24580 protocol=udp
+add action=return chain=APRSC
+add action=jump chain=forward comment="AE7SJ Firewall Rules" dst-address-list=AE7SJ jump-target=AE7SJ
+add chain=AE7SJ comment="AE7SJ - Allow All"
+add action=return chain=AE7SJ
+add action=jump chain=forward comment="K7NVH Firewall Rules" dst-address-list=K7NVH jump-target=K7NVH
+add chain=K7NVH comment="K7NVH - Allow All"
+add action=return chain=K7NVH
+add action=jump chain=forward comment="AE7Q Firewall Rules" dst-address-list=AE7Q jump-target=AE7Q
+add chain=AE7Q comment="Allow from IP specified" src-address=209.59.217.159
+add chain=AE7Q comment="Allow from 44-net" src-address=44.0.0.0/8
+add action=return chain=AE7Q
+add action=drop chain=forward comment="Drop Telnet from Outside" dst-port=23 in-interface=bond1 protocol=tcp
+/ip firewall mangle
+add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+add action=change-mss chain=forward new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+/ip firewall nat
+add action=masquerade chain=srcnat comment="NAT kludge since UCSD does not send return traffic for src-44/8 IPs" dst-address-list=UCSD \\
+    out-interface=bond1
+/ip ipsec peer
+add address=73.53.79.120/32 auth-method=rsa-signature certificate=K7WAN comment=AE7SJ enc-algorithm=aes-128 hash-algorithm=md5 remote-certificate=\\
+    AE7SJ send-initial-contact=no
+add address=50.46.215.96/32 auth-method=rsa-signature certificate=K7WAN comment=K7NVH enc-algorithm=aes-128 hash-algorithm=md5 remote-certificate=\\
+    K7NVH send-initial-contact=no
+add address=198.178.136.80/32 auth-method=rsa-signature certificate=K7WAN enc-algorithm=aes-128 nat-traversal=no remote-certificate=K7WAN
+add address=75.65.13.224/32 auth-method=rsa-signature certificate=K7WAN enc-algorithm=aes-128 hash-algorithm=md5 remote-certificate=K0RET \\
+    send-initial-contact=no
+add address=173.225.18.18/32 auth-method=rsa-signature certificate=K7WAN enc-algorithm=aes-128 nat-traversal=no remote-certificate=K7WAN
+add address=209.147.123.146/32 auth-method=rsa-signature certificate=K7WAN hash-algorithm=md5 remote-certificate=Baldi send-initial-contact=no
+add address=71.231.22.13/32 auth-method=rsa-signature certificate=K7WAN comment=KD7LXL enc-algorithm=aes-128 exchange-mode=base generate-policy=\\
+    port-override nat-traversal=no passive=yes policy-template-group=OPP-KD7LXL remote-certificate=KD7LXL send-initial-contact=no
+add auth-method=rsa-signature certificate=K7WAN comment=K7VE enc-algorithm=aes-128 generate-policy=port-override nat-traversal=no passive=yes \\
+    policy-template-group=OPP-K7VE remote-certificate=K7VE send-initial-contact=no
+add auth-method=rsa-signature certificate=K7WAN comment=NQ1E enc-algorithm=aes-128 generate-policy=port-override nat-traversal=no passive=yes \\
+    policy-template-group=OPP-NQ1E remote-certificate=NQ1E send-initial-contact=no
+add address=173.27.109.31/32 auth-method=rsa-signature certificate=K7WAN comment=KF4GTA enc-algorithm=aes-128 exchange-mode=base generate-policy=\\
+    port-override nat-traversal=no passive=yes policy-template-group=OPP-KF4GTA remote-certificate=KF4GTA send-initial-contact=no
+add address=64.119.4.114/32 auth-method=rsa-signature certificate=K7WAN comment=KD7KAB enc-algorithm=aes-128 exchange-mode=base generate-policy=\\
+    port-override nat-traversal=no passive=yes policy-template-group=OPP-KD7KAB remote-certificate=KD7KAB send-initial-contact=no
+add address=107.191.104.228/32 auth-method=rsa-signature certificate=K7WAN comment=VE7ASN enc-algorithm=aes-128 exchange-mode=base generate-policy=\\
+    port-override nat-traversal=no passive=yes policy-template-group=OPP-VE7ASN remote-certificate=VE7ASN send-initial-contact=no
+/ip ipsec policy
+set 0 disabled=yes dst-address=0.0.0.0/0 src-address=0.0.0.0/0
+add dst-address=10.10.10.2/32 proposal=vpn-esp protocol=ipencap sa-dst-address=73.53.79.120 sa-src-address=209.189.196.68 src-address=\\
+    209.189.196.68/32 tunnel=yes
+add comment=K7NVH dst-address=10.1.10.3/32 proposal=vpn-esp protocol=ipencap sa-dst-address=50.46.215.96 sa-src-address=209.189.196.68 src-address=\\
+    209.189.196.68/32 tunnel=yes
+add disabled=yes dst-address=198.178.136.80/32 ipsec-protocols=ah proposal=vpn-ah protocol=ipencap sa-dst-address=198.178.136.80 sa-src-address=\\
+    209.189.196.68 src-address=209.189.196.68/32 tunnel=yes
+add dst-address=10.0.5.2/32 proposal=vpn-esp protocol=ipencap sa-dst-address=75.65.13.224 sa-src-address=209.189.196.68 src-address=\\
+    209.189.196.68/32 tunnel=yes
+add dst-address=192.168.1.50/32 proposal=vpn-esp protocol=ipencap sa-dst-address=209.147.123.146 sa-src-address=209.189.196.68 src-address=\\
+    209.189.196.68/32 tunnel=yes
+add dst-address=173.225.18.18/32 ipsec-protocols=ah proposal=vpn-ah protocol=ipencap sa-dst-address=173.225.18.18 sa-src-address=209.189.196.68 \\
+    src-address=209.189.196.68/32 tunnel=yes
+add dst-address=44.24.246.0/31 group=OPP-K7VE proposal=vpn-ah src-address=44.24.246.2/31 template=yes
+add dst-address=44.24.246.0/31 group=OPP-KD7LXL proposal=vpn-ah src-address=44.24.246.10/31 template=yes
+add dst-address=44.24.246.1/32 group=OPP-NQ1E proposal=vpn-ah src-address=44.24.246.4/32 template=yes
+add dst-address=44.24.246.0/31 group=OPP-KF4GTA proposal=vpn-ah src-address=44.24.246.6/31 template=yes
+add dst-address=44.24.246.0/31 group=OPP-KD7KAB proposal=vpn-ah src-address=44.24.246.8/31 template=yes
+add dst-address=44.24.246.0/31 group=OPP-VE7ASN proposal=vpn-ah src-address=44.24.246.14/31 template=yes
+/ip route
+add distance=253 dst-address=44.12.6.0/24 type=blackhole
+add distance=200 dst-address=44.24.221.0/24 type=blackhole
+add comment="Blackhole unused 44.24.240.0/20 space to this useless bridge" distance=253 dst-address=44.24.240.0/20 gateway=loopback0
+add distance=1 dst-address=44.24.254.0/27 gateway=44.24.241.103
+add distance=1 dst-address=44.24.254.160/27 gateway=44.24.241.103
+add distance=1 dst-address=44.24.254.224/28 gateway=44.24.241.103
+add distance=1 dst-address=44.24.254.240/29 gateway=44.24.241.103
+add distance=253 dst-address=44.25.0.0/16 type=blackhole
+add comment="MemHamWAN has BGP, so we should learn their route from BGP. Disabling to restore routing between networks." disabled=yes distance=1 \\
+    dst-address=44.34.128.0/21 gateway=44.34.128.1
+/ip service
+set telnet disabled=yes
+set ftp disabled=yes
+set ssh port=222
+/ip ssh
+set forwarding-enabled=yes
+/ipv6 address
+add address=2604:5000:20::11 interface=bond1
+add address=2604:5000:20:1::1 disabled=yes interface=LAN
+add address=2604:5000:20:1000::1 interface=LAN
+add address=2604:5000:20:500::41/128 advertise=no interface=loopback0
+/ipv6 firewall address-list
+add address=2601:8:9180::/48 comment="tom (Comcast, Tacoma region, dynamic)" list=whitelist
+/ipv6 route
+add distance=200 dst-address=2604:5000:20::/48 type=unreachable
+/routing bgp aggregate
+add comment=OPP-K7VE inherit-attributes=no instance=default prefix=44.24.130.0/24
+add comment=OPP-KD7LXL inherit-attributes=no instance=default prefix=44.24.131.0/24
+add comment=OPP-NQ1E inherit-attributes=no instance=default prefix=44.24.125.0/24
+add comment="HamWAN non-IPIP-mesh anycast" disabled=yes include-igp=yes inherit-attributes=no instance=default prefix=44.24.221.0/24
+add comment=OPP-KF4GTA inherit-attributes=no instance=default prefix=44.36.240.0/21
+add comment=OPP-KD7KAB inherit-attributes=no instance=default prefix=44.24.200.0/22
+add comment=OPP-VE7ASN inherit-attributes=no instance=default prefix=44.135.219.0/24
+/routing bgp network
+add comment=HamWAN network=44.24.240.0/20 synchronize=no
+add comment=K7NVH network=44.12.6.0/24 synchronize=no
+add comment=MemHamWAN disabled=yes network=44.34.128.0/21 synchronize=no
+add comment="Prefer Westin" network=44.24.240.0/21 synchronize=no
+add comment="Prefer Westin" network=44.24.248.0/21 synchronize=no
+add comment="HamWAN IPv6" network=2604:5000:20::/48 synchronize=no
+add comment="HamWAN non-IPIP-mesh anycast" network=44.24.221.0/24 synchronize=no
+add comment=HamWAN network=44.25.0.0/16 synchronize=no
+/routing bgp peer
+add in-filter=AMPR-default name=peer1 out-filter=BGP-Announce remote-address=209.189.196.65 remote-as=7752
+add in-filter=AMPR-default name=peer2 out-filter=BGP-Announce remote-address=209.189.196.66 remote-as=7752
+add default-originate=if-installed in-filter=OPP-K7VE instance=OPP keepalive-time=10s name=OPP-K7VE out-filter=OPP-OUT passive=yes remote-address=\\
+    44.24.246.2 remote-as=65530 route-reflect=yes update-source=44.24.246.0
+add default-originate=if-installed in-filter=OPP-KD7LXL instance=OPP keepalive-time=10s name=OPP-KD7LXL out-filter=OPP-OUT passive=yes \\
+    remote-address=44.24.246.10 remote-as=65530 route-reflect=yes update-source=44.24.246.0
+add default-originate=if-installed in-filter=OPP-NQ1E instance=OPP keepalive-time=10s name=OPP-NQ1E passive=yes remote-address=44.24.246.4 \\
+    remote-as=65535 route-reflect=yes
+add default-originate=if-installed in-filter=OPP-KF4GTA instance=OPP keepalive-time=10s name=OPP-KF4GTA out-filter=OPP-OUT passive=yes \\
+    remote-address=44.24.246.6 remote-as=65530 route-reflect=yes update-source=44.24.246.0
+add default-originate=if-installed in-filter=OPP-KD7KAB instance=OPP keepalive-time=10s name=OPP-KD7KAB out-filter=OPP-OUT passive=yes \\
+    remote-address=44.24.246.8 remote-as=65530 route-reflect=yes update-source=44.24.246.0
+add address-families=ipv6 comment="Threshold broke IPv6" disabled=yes in-filter=AMPR-default name=peer1_ipv6 out-filter=BGP-Announce \\
+    remote-address=2604:5000:20::1 remote-as=7752
+add address-families=ipv6 comment="Threshold broke IPv6" disabled=yes in-filter=AMPR-default name=peer2_ipv6 out-filter=BGP-Announce \\
+    remote-address=2604:5000:20::2 remote-as=7752
+add default-originate=if-installed in-filter=OPP-VE7ASN instance=OPP keepalive-time=10s name=OPP-VE7ASN out-filter=OPP-OUT passive=yes \\
+    remote-address=44.24.246.14 remote-as=65530 route-reflect=yes update-source=44.24.246.0
+/routing filter
+add action=accept chain=HamWAN prefix=44.24.240.0/20 prefix-length=20-32
+add action=reject chain=HamWAN
+add action=accept chain=HamWAN-default prefix=44.24.240.0/20 prefix-length=20-32
+add action=accept chain=HamWAN-default prefix=0.0.0.0/0
+add action=reject chain=HamWAN-default
+add action=accept chain=AMPR-default prefix=44.0.0.0/8 prefix-length=8-32
+add action=accept chain=AMPR-default prefix=0.0.0.0/0
+add action=accept address-family=ipv6 chain=AMPR-default
+add action=reject chain=AMPR-default
+add action=accept chain=AMPR prefix=44.0.0.0/8 prefix-length=8-32
+add action=reject chain=AMPR
+add action=accept chain=BGP-Announce prefix=44.24.240.0/20 prefix-length=20-21
+add action=accept chain=BGP-Announce prefix=44.12.6.0/24
+add action=accept chain=BGP-Announce prefix=44.34.128.0/21 set-bgp-prepend=4
+add action=accept chain=BGP-Announce prefix=44.24.221.0/24
+add action=accept chain=BGP-Announce prefix=44.24.125.0/24
+add action=accept chain=BGP-Announce prefix=44.24.131.0/24
+add action=accept chain=BGP-Announce prefix=44.25.0.0/16
+add action=accept chain=BGP-Announce prefix=2604:5000:20::/48
+add action=jump chain=BGP-Announce jump-target=OPP
+add action=reject chain=BGP-Announce
+add action=accept chain=OPP-K7VE prefix=44.24.130.0/24 prefix-length=24-32
+add action=reject chain=OPP-K7VE
+add action=accept chain=OPP comment=OPP-K7VE prefix=44.24.130.0/24
+add action=accept chain=OPP comment=OPP-KF4GTA prefix=44.36.240.0/21
+add action=accept chain=OPP comment=OPP-KD7KAB prefix=44.24.200.0/22
+add action=accept chain=OPP-KD7LXL prefix=44.24.131.0/24 prefix-length=24-32
+add action=reject chain=OPP-KD7LXL
+add action=accept chain=OPP comment=OPP-KD7LXL prefix=44.24.131.0/24
+add action=accept chain=OPP-NQ1E prefix=44.24.125.0/24 prefix-length=24-32
+add action=reject chain=OPP-NQ1E
+add action=accept chain=OPP comment=OPP-NQ1E prefix=44.24.125.0/24
+add action=accept chain=OPP comment=OPP-VE7ASN prefix=44.135.219.0/24
+add action=return chain=OPP
+add action=discard chain=OPP-OUT comment="Sending these /32s to clients causes flapping, must filter them out" prefix=44.24.246.0/23 prefix-length=\\
+    23-32
+add action=discard chain=OPP-OUT comment="Let the clients take their default route to reach IPsec" prefix=44.24.221.0/24 prefix-length=24-32
+add action=accept chain=OPP-OUT comment="Adding 44.0.0.0/8 into client routing tables causes transmit loops" prefix=44.0.0.0/8 prefix-length=9-32
+add action=accept chain=OPP-OUT prefix=0.0.0.0/0
+add action=discard chain=OPP-OUT
+add action=accept chain=OPP-KF4GTA prefix=44.36.240.0/21 prefix-length=21-32
+add action=reject chain=OPP-KF4GTA
+add action=accept chain=OPP-KD7KAB prefix=44.24.200.0/22 prefix-length=22-32
+add action=reject chain=OPP-KD7KAB
+add action=accept chain=OPP-VE7ASN prefix=44.135.219.0/24 prefix-length=24-32
+add action=reject chain=OPP-VE7ASN
+/routing ospf interface
+add authentication=md5 interface=ipip1 network-type=point-to-point
+add authentication=md5 interface=ipip2 network-type=point-to-point
+add authentication=md5 comment=Corvallis interface=ipip3 network-type=point-to-point
+add authentication=md5 interface=LAN network-type=broadcast
+add authentication=md5 comment="Baldi OOB" cost=200 interface=ipip6 network-type=point-to-point
+add authentication=md5 interface=ipip7 network-type=point-to-point
+/routing ospf network
+add area=backbone network=44.24.242.17/32
+add area=backbone network=44.24.242.19/32
+add area=backbone network=44.24.242.20/32
+add area=backbone network=44.24.242.23/32
+add area=backbone network=44.24.242.15/32
+add area=backbone network=44.24.242.33/32
+add area=backbone network=44.24.241.96/28
+add area=backbone network=44.24.242.44/32
+/routing ospf-v3 interface
+add area=backbone interface=LAN
+add area=backbone interface=sit2
+/snmp
+set contact="#HamWAN on irc.freenode.org" enabled=yes
+/system clock
+set time-zone-autodetect=no time-zone-name=America/Los_Angeles
+/system identity
+set name=ER1.Seattle
+/system logging
+add disabled=yes topics=bgp
+add action=remote topics=info
+add action=remote topics=warning
+add action=remote topics=error
+/system ntp client
+set enabled=yes primary-ntp=44.24.244.4 secondary-ntp=44.24.245.4
+/tool bandwidth-server
+set authenticate=no
+{CODE}

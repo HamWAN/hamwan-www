@@ -1,0 +1,10 @@
+How to implement multiple QoS tiers:
+#Control
+#Emergency Communications
+#Voice over IP
+#Normal
+#3rd Party / Best Effort?
+
+Not sure if these different QoS tiers should intercommunicate.  Don't want someone from 3rd party to be spamming packets into Control or EmComm.  But it would make sense for EmComm to make requests into servers that typically live on Normal priority?  Not sure, perhaps EmComm needs own servers.  Need to sort this all out!
+
+

@@ -1,0 +1,171 @@
+!!!Introduction
+As the ((Boonton 2500 Circuit Analysis)) page showed, the instrument is non-ideal in Ranges 0 through 2.  In these ranges the instrument works in the mode of a double cascaded voltage divider.
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=29")}{SVG}::
+R1 and R2 form the first stage divider, which then feeds the second stage divider, composed of R3, R21+22 and R4.  The second stage divider remains at a fixed ratio in these ranges.  Its exact ratio is:
+~np~$$\\frac{V_o}{V_i} = \\frac{1800 Ω}{999100 Ω + 1800 Ω + 999100 Ω} = 0.0009$$~/np~
+In Range 0, where the goal is to produce a 9 μV output, the input to the second stage divider needs to be:
+~np~$$V_i = \\frac{9 μV}{0.0009} = 10 mV$$~/np~
+In order to get this from our 10 V voltage reference, the first stage divider ratio needs to be:
+~np~$$\\frac{V_o}{V_i} = \\frac{10 mV}{10 V} = 0.001$$~/np~
+In reality the first stage divider ratio for this range setting is:
+~np~$$\\frac{V_o}{V_i} = \\frac{10 Ω}{10000 Ω} = 0.001$$~/np~
+Which is exactly what is needed!  So why is there a small error in the actual output of the instrument?
+
+!!!Root Cause
+The answer lies in source loading.  The above equations are accurate predictions of voltage divider output only when the divider is not being asked to supply any current.  As soon as you start to draw current load from the divider, you alter the voltage.  The ability of the divider to withstand load and stay true to its intended ideal voltage is characterized by its source resistance.  The other factor affecting accuracy here is that as the first stage divider produces ever increasing output voltage from Range 0 to Range 2, the actual current drawn from it by the second stage divider also increases.  The confluence of increasing source resistance and increasing load current cause the errors seen in the ((Boonton 2500 Circuit Analysis)).  Let's examine these individually to see if we've got a complete handle on the situation.  Here are the actual errors again, for the ranges ~np~{0, 1, 2}~/np~:
+~np~$$\\begin{align}
+Error_{0} &= -0.000499497505024\\ldots \\% \\\\
+Error_{1} &= -0.00494975498715\\ldots \\% \\\\
+Error_{2} &= -0.0449797591084\\ldots \\% \\\\
+\\end{align}$$~/np~
+
+!!!Source Resistance of First Stage Voltage Divider
+Source resistance can be calculated in the usual way of ~np~\\(\\frac{V_{open\\ circuit}}{I_{closed\\ circuit}}\\)~/np~ but we'll use the quicker technique here of replacing the voltage source with a piece of short circuit wire, and then calculating the resistance of the network as seen looking into the output of the first stage divider.  The source resistances for each of the ranges ~np~{0, 1, 2}~/np~ are as follows:
+~np~$$\\begin{align}
+R_{s0} &= \\frac{1}{\\frac{1}{10 Ω} + \\frac{1}{9990 Ω}} = 9.99 Ω \\\\
+R_{s1} &= \\frac{1}{\\frac{1}{100 Ω} + \\frac{1}{9900 Ω}} = 99 Ω \\\\
+R_{s2} &= \\frac{1}{\\frac{1}{1000 Ω} + \\frac{1}{9000 Ω}} = 900 Ω \\\\
+\\end{align}$$~/np~
+Given this information, and the knowledge that the voltage error is linear with source resistance, we can calculate how much worse the output accuracy of each range should be, relative to the previous range, given a constant current loading condition:
+~np~$$\\begin{align}
+RelativeError_{0-1} &= \\frac{99 Ω}{9.99Ω} = 9.9099099099\\ldots \\\\
+RelativeError_{1-2} &= \\frac{900 Ω}{99Ω} = 9.0909090909\\ldots \\\\
+\\end{align}$$~/np~
+Let's see how well these error predictions align with the actual calculated errors:
+~np~$$\\begin{align}
+Error_0 \\times RelativeError_{0-1} &= -0.0049499752750\\ldots \\approx Error_1 \\\\
+Error_1 \\times RelativeError_{1-2} &= -0.044997772610\\ldots \\approx Error_2 \\\\
+\\end{align}$$~/np~
+I'm not sure why these errors are larger than the actual errors, but they are aligned very closely with the actual errors.  I would have expected the calculated error predictions here to be slightly smaller than the real error values since variable current loading is yet to be considered.  Baffling!
+
+!!!Current Loading of First Stage Voltage Divider
+Skipping detailed analysis due to confusion with previous section.  Here are the current load numbers between the output of the first stage divider and the input of the second stage divider:
+Range 0 = 5nA
+Range 1 = 50nA
+Range 2 = 500nA
+
+!!!Ideal First Stage Voltage Divider
+To produce the required voltage outputs of ~np~{9μV, 90μV, 900μV}~/np~ given the fixed second stage divider ratio of 0.0009, the respective voltage inputs need to be ~np~{10mV,  100mV, 1V}~/np~.  Since the second stage divider resistance is a fixed 2MΩ, this means the respective current loads will be ~np~{5nA, 50nA, 500nA}~/np~.  In implementing the ideal first stage divider I'd prefer to:
+#Keep the standing current at the original design target of 1mA
+#Not mess with fractional ohms by tweaking the values of R2 (10Ω is already pretty low)
+This implies the design changes will be made to R1 values only.  Let's begin with Range 0.  Here is the required circuit:
+::{SVG(scale="0.31" src="tiki-download_wiki_attachment.php?attId=30")}{SVG}::
+~np~$$R1_0 = \\frac{10 V - 10 mV}{1 mA + 5 nA} = 9989.9500502497\\ldots Ω$$~/np~
+Using the same technique, we can solve for Range 1 values:
+~np~$$R1_1 = \\frac{10 V - 100 mV}{1 mA + 50 nA} = 9899.5050247487\\ldots Ω$$~/np~
+And Range 2:
+~np~$$R1_2 = \\frac{10 V - 1 V}{1 mA + 500 nA} = 8995.5022488755\\ldots Ω$$~/np~
+Sadly, these values are not easily attainable given how the actual range selection works:
+::{SVG(scale="0.32" src="tiki-download_wiki_attachment.php?attId=31")}{SVG}::
+As ranges are selected, resistors move from the top to the bottom of the divider.  To satisfy the ideal values the resistors would have to be:
+~np~$$\\begin{align}
+R1 &= R1_2 = 8995.5022488755\\ldots Ω \\\\
+R2 &= R1_1 - R1 = 904.0027758732\\ldots Ω \\\\
+R3 &= R1_0 - R1 - R2 = 90.4450255009\\ldots Ω \\\\
+R4 &= 10 Ω \\\\
+\\end{align}$$~/np~
+But this puts non-ideal values into the bottom of the divider.  The target standing current of 1mA in the bottom will now produce the following voltages at the divider tap points:
+~np~$$\\begin{align}
+V_0 &= 1mA \\times 10 Ω = 10 mV \\\\
+V_1 &= 1mA \\times \\left(10 Ω + 90.4450255009\\ldots Ω\\right) = 100.4450255009\\ldots mV \\\\
+V_2 &= 1mA \\times \\left(10 Ω + 90.4450255009\\ldots Ω + 904.0027758732\\ldots Ω\\right) = 1.0044478013\\ldots V \\\\
+\\end{align}$$~/np~
+This made the errors worse than they were when we started!  There are 4 permutations we can try in this design approach:
+#Fixed current bottom, vary top resistance
+#Fixed current bottom, vary bottom resistance
+#Fixed current top, vary top resistance
+#Fixed current top, vary bottom resistance
+We've tried #1 so far, and it may not have been the best idea.  #3 and #4 have the added advantage of putting a constant current load on the voltage reference, which improves linearity.  But regardless of the approach, the interaction of top and bottom, while subject to variable tap locations and variable current loading, looks to be a tough problem to solve.  Therefore, let's abandon this approach for now and consider developing a set of Range-specific dividers which place a constant current load on the voltage reference.  Perhaps these individual implementations can then be re-combined into a single multi-tap divider.  If not, then at least the DC calibrator will have a set of working circuits despite a small parts count increase.
+
+!!!Dedicated First Stage Dividers
+Range 0:
+::{SVG(scale="0.31" src="tiki-download_wiki_attachment.php?attId=32")}{SVG}::
+~np~$$\\begin{align}
+R1_0 &= \\frac{10 V - 10 mV}{1 mA} = 9990 Ω \\\\
+R2_0 &= \\frac{10 mV}{1 mA - 5 nA} = 10.0000500002\\ldots Ω \\\\
+\\end{align}$$~/np~
+Now for Range 1:
+~np~$$\\begin{align}
+R1_1 &= \\frac{10 V - 100 mV}{1 mA} = 9900 Ω \\\\
+R2_1 &= \\frac{100 mV}{1 mA - 50 nA} = 100.0050002500\\ldots Ω \\\\
+\\end{align}$$~/np~
+And finally, Range 2:
+~np~$$\\begin{align}
+R1_2 &= \\frac{10 V - 1 V}{1 mA} = 9000 Ω \\\\
+R2_2 &= \\frac{1 V}{1 mA - 500 nA} = 1000.5002501250\\ldots Ω \\\\
+\\end{align}$$~/np~
+And this right here demonstrates why implementing a constant-current-voltage-reference multi-tap first stage divider is not just a hard problem, but an impossible one!  As the tap moves from Range 1 to Range 2 (for example), R1 has to shed 900Ω while R2 has to gain 900.4952498750...Ω.  That tiny 0.4952498750...Ω difference kills the possibility of a single resistor move ever producing the required effect.
+
+All this talk of constant-current-voltage-reference though does raise an interesting point.
+
+!!!Constant Current Voltage Reference Operation
+Voltage references are not ideal devices.  They undergo voltage droop when subjected to current load.  This voltage droop is a source of error.  The instruments attached to the output of the calibrator put a load on the voltage reference, but it's not a load we can control, so let's not worry about it too much.  One important thing we can control though is the current load placed upon the voltage reference as a result of the voltage dividers changing ranges.  In the previous section we've just fixed the problem for Range 0 - 2, but Ranges 3 - 6B will still affect the current loading.  Perhaps there is a way we can fix the instrument as a whole to always draw a constant current from the voltage reference.
+
+To pull this off, we'll have to employ shunting resistors to make up load for the lower-power ranges.  Therefore, let's look at the worst case highest current load, Range 6B:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=33")}{SVG}::
+Let's also assume we can take out the parasitic load of R2 in this range, leaving the circuit to draw:
+~np~$$I_{net} = \\frac{10 V}{1100 Ω + 1800 Ω + 1100 Ω} = 2.5 mA$$~/np~
+This will now be the target current draw for all ranges.  Since Range 6B exhibits this draw (by definitions) it does not need any shunt resistors.  Now, for Range 6A:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=34")}{SVG}::
+~np~$$\\begin{align}
+I_{net} &= \\frac{10 V}{4100 Ω + 1800 Ω + 4100 Ω} = 1 mA \\\\
+\\therefore R_{shunt\\ 6A} &= \\frac{10 V}{2.5 mA - 1 mA} = 6666.6666666666\\ldots Ω \\\\
+\\end{align}$$~/np~
+Range 5:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=35")}{SVG}::
+~np~$$\\begin{align}
+I_{net} &= \\frac{10 V}{9100 Ω + 1800 Ω + 9100 Ω} = 500 μA \\\\
+\\therefore R_{shunt\\ 5} &= \\frac{10 V}{2.5 mA - 500 μA} = 5000 Ω \\\\
+\\end{align}$$~/np~
+Range 4:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=36")}{SVG}::
+~np~$$\\begin{align}
+I_{net} &= \\frac{10 V}{99100 Ω + 1800 Ω + 99100 Ω} = 50 μA \\\\
+\\therefore R_{shunt\\ 4} &= \\frac{10 V}{2.5 mA - 50 μA} = 4081.6326530612\\ldots Ω \\\\
+\\end{align}$$~/np~
+Range 3:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=37")}{SVG}::
+~np~$$\\begin{align}
+I_{net} &= \\frac{10 V}{999100 Ω + 1800 Ω + 999100 Ω} = 5 μA \\\\
+\\therefore R_{shunt\\ 3} &= \\frac{10 V}{2.5 mA - 5 μA} = 4008.0160320641\\ldots Ω \\\\
+\\end{align}$$~/np~
+Ranges 2 - 0 have already been re-designed with a constant current 1mA draw, the same as Range 6A.  Their design can simply be augmented by shunting them with an ~np~\\(R_{shunt\\ 6A}\\)~/np~ resistor.  We can also re-design the ranges for a native 2.5mA draw, starting with Range 0:
+::{SVG(scale="0.31" src="tiki-download_wiki_attachment.php?attId=38")}{SVG}::
+~np~$$\\begin{align}
+R1_0 &= \\frac{10 V - 10 mV}{2.5 mA} = 3996 Ω \\\\
+R2_0 &= \\frac{10 mV}{2.5 mA - 5 nA} = 4.0000080000\\ldots Ω \\\\
+\\end{align}$$~/np~
+Range 1:
+~np~$$\\begin{align}
+R1_1 &= \\frac{10 V - 100 mV}{2.5 mA} = 3960 Ω \\\\
+R2_1 &= \\frac{100 mV}{2.5 mA - 50 nA} = 40.0008000160\\ldots Ω \\\\
+\\end{align}$$~/np~
+Range 2:
+~np~$$\\begin{align}
+R1_2 &= \\frac{10 V - 1 V}{2.5 mA} = 3600 Ω \\\\
+R2_2 &= \\frac{1 V}{2.5 mA - 500 nA} = 400.0800160032\\ldots Ω \\\\
+\\end{align}$$~/np~
+The choice of which way to go for Ranges 0 - 2 comes down to what resistor values are more practical to implement.  The effect on the whole calibrator circuit is minimal either way, with the 2.5mA native implemention presenting a marginally lower output resistance on the output of the instrument.
+
+!!!Sensitivity to Constant Current Loading
+Let us not worry too much about the strange ~np~\\(R_{shunt\\ *}\\)~/np~ values derived above.  Even if the resistors chosen to play their role are not spot-on, the effect on voltage reference regulation is minimal.  For example, the original voltage reference in the Boonton 2500 has a maximum (worst case) load regulation spec of 0.01%/mA.  This means that if our shunt resistors aren't quite right, and they miss the 2.5mA mark by let's say 0.1mA, the voltage error of the reference will be just 0.001%.  Modern voltage references are much better regulated than this, so approximate values for the shunt resistors are just fine.
+
+!!!A Small Compromise in Range 0 - 2 Design
+Since it's impractical to control resistances down to thousandths of an ohm, and tiny offsets to standard values are more easily accomplished when they're negative offsets (parallel with a high resistance), and since we've just established that the 2.5mA constant current load is a ballpark target, a small compromise is in order.  It'd be better to do the load compensation in the top of the voltage divider, since it has much larger values for us to play with.  This means the bottom resistor in the first stage divider will carry 2.5mA, and the top resistor will carry the non-ideal but noone-cares current of 2.5mA+500nA, max.  Let's redesign that pesky first stage divider once more, hopefully for the last time, starting with Range 0:
+::{SVG(scale="0.31" src="tiki-download_wiki_attachment.php?attId=39")}{SVG}::
+~np~$$\\begin{align}
+R1_0 &= \\frac{10 V - 10 mV}{2.5 mA + 5 nA} = 3995.9920080159\\ldots Ω \\\\
+R2_0 &= \\frac{10 mV}{2.5 mA} = 4 Ω \\\\
+\\end{align}$$~/np~
+Range 1:
+~np~$$\\begin{align}
+R1_1 &= \\frac{10 V - 100 mV}{2.5 mA + 50 nA} = 3959.9208015839\\ldots Ω \\\\
+R2_1 &= \\frac{100 mV}{2.5 mA} = 40 Ω \\\\
+\\end{align}$$~/np~
+Range 2:
+~np~$$\\begin{align}
+R1_2 &= \\frac{10 V - 1 V}{2.5 mA + 500 nA} = 3599.2801439712\\ldots Ω \\\\
+R2_2 &= \\frac{1 V}{2.5 mA} = 400 Ω \\\\
+\\end{align}$$~/np~
+There, we've just improved the worst case resistance delta from 0.000008Ω to about 0.008Ω.  A factor of 1000 improvement in terms of value controllability, making these load compensations far more attainable in the real world implementation.
+

@@ -1,0 +1,225 @@
+{HTML()}<div class="row">
+  <div class="col-sm-5 col-sm-push-7">
+    <div class="panel panel-default">
+      <div class="panel-body">{HTML}
+!Prefer Video?
+This video tutorial from K7MM walks through the instructions below with some helpful explanations along the way.
+{HTML()}<video src="/t/tiki-download_wiki_attachment.php?attId=257&page=Client%20Node%20Configuration" style="width:100%;" controls></video>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-7 col-sm-pull-5">{HTML}
+{maketoc}
+!Instructions
+{REMARKSBOX(type="warning" title="Warning")}{HTML()}
+<style>
+.blink {
+    animation: blink 1s steps(5, start) infinite;
+    -webkit-animation: blink 1s steps(5, start) infinite;
+    color: red;
+    font-size:150%;
+}
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+@-webkit-keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+</style>
+<div class="blink">BE SURE YOU ALWAYS HAVE AN ANTENNA OR DUMMY LOAD PLUGGED IN WHEN THE MODEM IS POWERED ON</div>
+{HTML}{REMARKSBOX}
+{REMARKSBOX(type="note" title="Note")}These instructions are meant to be entered from the command line interface to the router.  You can open a command line in WinBox by clicking on "New Terminal".  __To paste commands in winbox, it's necessary to right-click and select paste__ rather than trying to use Ctrl-V.{REMARKSBOX}
+{HTML()}</div></div>{HTML}
+#Upgrade your modem to the latest RouterOS v6.
+**{CODE(caption="If you have connected the modem to your LAN in a way that provides Internet access, the following command can be used:")}
+/system package update upgrade
+{CODE}
+**Otherwise, use the standalone upgrade method: http://wiki.mikrotik.com/wiki/Manual:Upgrading_RouterOS (also works on older ROS 5.xx that does not support the upgrade command)
+#Give your modem a name that tells us where it's located and which ((Sites|site)) it's linking to.  For example:
+##{CODE(caption="AE7SJ's modem linked to the Paine Field cell site")}
+/system identity
+set name=AE7SJ-Paine
+{CODE}
+#Set a password for the admin user.
+## Using Winbox: Click System -> Users -> Users tab -> double click admin -> Password...
+## {CODE(caption="Set password using terminal")}
+/user set admin password=
+/console clear-history
+{CODE}
+#To support shared administration, add the following HamWAN Network Administration accounts into the "full" group.  Usernames are case sensitive.  For the passwords, pick whatever secure password you like.
+{REMARKSBOX(type="note" title="Note")}The passwords below are randomly generated in your browser, not stored anywhere, and will never be used. Any HamWAN access to your modem will be done with certificates.{REMARKSBOX}
+#{CODE()}
+/user
+add group=full name=eo password=
+add group=full name=NQ1E password=
+add group=full name=nigel password=
+add group=full name=osburn password=
+add group=full name=tom password=
+add group=full name=KG7OZZ password=
+add group=read name=monitoring password=
+/console clear-history
+{CODE}
+#To support shared administration, add SSH keys for the HamWAN Network Administration accounts.
+##Download and save each key attached to the bottom on this page.
+***{CODE(caption="Hint: Already configured internet access? Use this command to download the keys directly to the modem:")}
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=201" dst-path=key-dsa-tom.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=148" dst-path=key-dsa-monitoring.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=140" dst-path=key-dsa-osburn.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=123" dst-path=key-dsa-NQ1E.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=120" dst-path=key-dsa-nigel.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=119" dst-path=key-dsa-eo.txt; \\
+/tool fetch url="https://www.hamwan.org/t/tiki-download_wiki_attachment.php\\?attId=270" dst-path=key-rsa-KG7OZZ.txt
+{CODE}
+##Drag and drop it into the Files window on your modem.
+##{CODE(caption="Import SSH keys and associate them with the right accounts")}
+/user ssh-keys
+import public-key-file=key-dsa-eo.txt user=eo
+import public-key-file=key-dsa-NQ1E.txt user=NQ1E
+import public-key-file=key-dsa-nigel.txt user=nigel
+import public-key-file=key-dsa-osburn.txt user=osburn
+import public-key-file=key-dsa-tom.txt user=tom
+import public-key-file=key-dsa-monitoring.txt user=monitoring
+import public-key-file=key-rsa-KG7OZZ.txt user=KG7OZZ
+{CODE}
+#{CODE(caption="Enable Ethernet boot in case you ever need to reinstall the router with NetInstall")}
+/system routerboard settings set boot-device=try-ethernet-once-then-nand
+{CODE}
+#{CODE(caption="Remote Logging")}
+/system logging action set 3 bsd-syslog=no name=remote remote=44.24.244.8 remote-port=514 src-address=0.0.0.0 syslog-facility=daemon syslog-severity=auto target=remote
+/system logging add action=remote disabled=no prefix="" topics=info
+/system logging add action=remote disabled=no prefix="" topics=warning
+/system logging add action=remote disabled=no prefix="" topics=error{CODE}
+#{CODE(caption="SNMP Monitoring")}
+/snmp set enabled=yes contact="#HamWAN on irc.freenode.org"
+/snmp community set name=hamwan addresses=44.24.240.0/20 read-access=yes write-access=no numbers=0
+{CODE}
+#{CODE(caption="Use HamWAN's Anycast NTP Servers")}
+/system ntp client set enabled=yes primary-ntp=44.24.244.4 secondary-ntp=44.24.245.4
+{CODE}
+#{CODE(caption="Clear firewall filter rules")}
+/ip firewall filter remove [find dynamic=no]
+{CODE}
+#{CODE(caption="Set the HamWAN Maximum Transmission Unit (MTU) policy ")}
+/ip firewall mangle
+add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+add action=change-mss chain=forward new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+{CODE}
+#{CODE(caption="Remove local DHCP server")}
+/ip dhcp-server
+remove [find]
+/ip dhcp-server network
+remove [find]
+{CODE}
+#{CODE(caption="Remove local IP address")}
+/ip address
+remove [find]
+{CODE}
+#{CODE(caption="Disable DNS service")}
+/ip dns
+set allow-remote-requests=no
+{CODE}
+#{CODE(caption="Add HamWAN sector channels")}
+/interface wireless channels
+add band=5ghz-onlyn comment="Cell sites radiate this at 0 degrees (north)" frequency=5920 list=HamWAN name=Sector1-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 120 degrees (south-east)" frequency=5900 list=HamWAN name=Sector2-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 240 degrees (south-west)" frequency=5880 list=HamWAN name=Sector3-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 0 degrees (north)" frequency=5920 list=HamWAN name=Sector1-10 width=10
+add band=5ghz-onlyn comment="Cell sites radiate this at 120 degrees (south-east)" frequency=5900 list=HamWAN name=Sector2-10 width=10
+add band=5ghz-onlyn comment="Cell sites radiate this at 240 degrees (south-west)" frequency=5880 list=HamWAN name=Sector3-10 width=10
+{CODE}
+#{CODE(caption="Configure the modem to announce your callsign and location")}
+/interface wireless
+set 0 radio-name="CALLSIGN/YourLocation-DestinationCell"
+# For example, set 0 radio-name="AE7SJ/Monroe-Paine"
+{CODE}
+#{CODE(caption="Configure the wireless card to use HamWAN")}
+/interface wireless
+set 0 disabled=no frequency-mode=superchannel scan-list=HamWAN ssid=HamWAN wireless-protocol=nv2
+{CODE} If you get an error of "input does not match any value of name", re-run the set command WITHOUT the scan-list=HamWAN parameter.  Use winbox to set the scan-list to HamWAN instead.  This is a suspected bug.
+#{CODE(caption="Tell your modem to pull DHCP, including default gateway, from HamWAN")}
+/ip dhcp-client
+add add-default-route=yes dhcp-options=hostname,clientid disabled=no interface=wlan1
+{CODE}
+#{CODE(caption="OPTIONAL: Tell your modem to pull DHCP without default gateway or DNS from your LAN as well")}
+/ip dhcp-client
+add add-default-route=no use-peer-dns=no dhcp-options=hostname,clientid disabled=no interface=ether1
+{CODE}
+
+!Connect
+# Point your dish at any ((Sites|cell sites)) and look for beacons.  Optimize for best signal. {CODE()}
+/interface wireless scan 0
+{CODE}
+#{CODE(caption="When signal is optimized, stop scanning and verify you have an association with the cell site")}
+/interface wireless monitor 0
+{CODE}
+#{CODE(caption="Verify you can reach the Internet using HamWAN")}
+/tool traceroute 8.8.8.8
+{CODE}
+#{CODE(caption="Verify you can resolve DNS")}
+/ping google.com
+{CODE}
+#{CODE(caption="Verify NTP synchronization")}
+/system ntp client print
+# Should see "status: reached", "status: synchronized", or a recent number like "last-update-before: 4s490ms" if you're connected to the network.
+/system clock print
+# Should display the correct date + time if you're connected to the network, or have internet available through other means.
+{CODE}
+
+~tc~
+#OPTIONAL: Work around a RouterOS route cache bug until it's fixed upstream
+##{CODE(caption="Set the router to auto-reboot when route cache gets to 70% of capacity" colors="none")}
+/system script
+add name=route-cache-fix policy=ftp,reboot,read,write,policy,test,winbox,password,sniff,sensitive,api source=":l\\
+    ocal percentused ((100 * [/ip route cache get cache-size]) / [/ip route cache get max-cache-size])\\
+    \\n:log info \\"RouteCacheUsed: \\$percentused %\\";\\
+    \\n:if (\\$percentused > 70) do={ log info \\"Route Cache Above Threshold. Rebooting.\\"; /system reboot; };"
+/system scheduler
+add interval=1d name=route-cache-fix on-event=route-cache-fix policy=\\
+    ftp,reboot,read,write,policy,test,winbox,password,sniff,sensitive,api start-time=startup
+{CODE}
+~/tc~
+!Next Steps
+!!Integrating HamWAN into your LAN
+Check out the ((LAN integration)) article for ideas on how you might structure your network to include HamWAN. The simplest option is to not integrate your LAN at all, but to create a new isolated LAN. This is a great way to initially test your HamWAN connection.
+!!!Create an isolated LAN for use with HamWAN
+#{CODE(caption="Assign an IP address to your modem's LAN port")}
+/ip address
+add address=192.168.88.1/24 interface=ether1
+{CODE}
+#{CODE(caption="Configure DHCP server")}
+/ip pool
+add name=dhcp-pool ranges=192.168.88.100-192.168.88.199
+/ip dhcp-server network
+add address=192.168.88.0/24 dns-server=44.24.244.1,44.24.245.1 gateway=192.168.88.1
+/ip dhcp-server
+add address-pool=dhcp-pool interface=ether1 name=dhcp disabled=no
+{CODE}
+#Connect one end of an Ethernet cable to your modem and the other to the PoE injector (the injector included with the Metal feeds power to the socket side of the adapter). Plug the injector directly into your PC, or into a switch for use with multiple PCs. The modem will assign IP addresses to connected PCs and route their packets to HamWAN.
+~tc~
+{CODE(caption="Configure a Windows workstation to use your new modem")}
+route ADD 44.0.0.0 MASK 255.0.0.0 <ether1 IP of your modem>
+{CODE}
+~/tc~
+{JQ()}
+function generatePassword() {
+    var length = 16,
+        charset = "abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+}
+
+$('pre').each(function() {
+\tif (this.innerHTML) {
+            var html = this.innerHTML.replace(/password=/g, 'password=' + generatePassword())
+\t    this.innerHTML = html;
+\t}
+});
+{JQ}
+

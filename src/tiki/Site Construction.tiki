@@ -1,0 +1,21 @@
+Documentation on techniques and equipment used to construct sites.
+
+!!!Equipment Suppliers
+#[http://www.sitepro1.com/] Reasonably priced, good selection, default go-to supplier, good responsiveness.
+#[http://www.gmesupply.com/] Seemingly higher priced.  Untested service.
+
+!!!Tower Climbing Safety Training
+#[http://www.comtrainusa.com/] They provide a good course that introduces people to tower climbing.  Focused on safety and not anything else.  About $850 to go through it.  Includes a suspended line rescue tower excercise.
+
+!!!Cable
+We recommend use of Shielded ethernet cable, known as STP (Shielded Twisted Pair). Ethernet can generate noise at HF frequencies, which can be bothersome for your neighbors. We usually use Ubiquiti's TC-PRO cable.
+
+!!!Antenna Spacing
+#Avoid interaction of radiation patterns
+#Maximize physical distance between antennas
+#Put obstacles in between antennas
+
+!!!Frequently Asked Questions
+!!!!Do I need to deploy shields with the sector antennas?
+Yes and no. You absolutely do want shielding between your sector antennas. Sometimes a building can provide this shielding, if not, you'll want to attach shields to the sectors. Your TX levels are going to be +30dBm, and your RX levels need to be sensitive down to -90dBm. With a 120dB range, if the transmitter leaks even 1 trillionth of its power, it will affect performance of adjacent receivers. Additionally, our transmitters use OFDM, which has very wide skirts, leaving some TX energy in adjacent channels. No amount of selectivity on the receiver can block in band signals. Shields can.
+

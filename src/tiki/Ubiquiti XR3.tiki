@@ -1,0 +1,12 @@
+!Frequency Response
+::{img attId="194"}::
+The modem was configured at 5MHz increments from 5100MHz to 5900MHz, which should result in a sweep from 3100MHz to 3900MHz.  The bandwidth was 20MHz and power was default.  The horizontal scale above is 90MHz / graticule.
+
+!Last Output Filter Bypassed
+For the following graph, the last bandpass filter in the transmitter chain was removed.  Measurement power level was +20dBm.
+::{img attId="199"}::
+
+!Both Output Filters Bypassed
+In the following graph, both transmit bandpass filters were bypassed.  Measurement power level was +20dBm.  In order to see all the harmonics without filters a wider measurement spectrum was recorded: from 2GHz to 6GHz.
+::{img attId="200"}::
+Ignore the noise floor step at about 5.8GHz - that's an instrument (HP 8566A) artifact, not a component of the card's signal.

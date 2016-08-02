@@ -1,0 +1,68 @@
+{maketoc}
+
+
+!Official HamWAN Band Plan
+The HamWAN Band Plan has been created to offer the most efficient use of amateur radio spectrum while managing co-channel and adjacent channel interference between HamWAN infrastructures and external entities. These standards ensure optimal performance while ensuring compliance with FCC regulations, and as such shall only be considered for HamWAN networks located in the United States.
+!! Point-to-Multi-Point (last mile, client point-of-presence)
+The HamWAN Band Plan shall be used for all point-to-multipoint connections. Such connections shall be "dual-polarity", with two transmit and receive chains and two antennas offset 90 degrees (frequently this is combined as one antenna system). If only one chain is available, it shall be radiated with horizontal polarization. Channels with names starting with __s__ shall be used at the point-of-presence with sector antennas while those starting with __o__ shall be used with omnidirectional antennas.
+{DIV(type=pre)}
+ Name        Low        Center     High      True Bearing
+ s1-10      5.915       5.920      5.925           0
+ s2-10      5.895       5.900      5.905           120
+ s3-10      5.875       5.880      5.885           240
+ s1-5       5.9175      5.920      5.9225          0
+ s2-5       5.8975      5.900      5.9025          120
+ s3-5       5.8775      5.880      5.8825          240
+ o1-5       5.8625      5.865      5.8675          n/a
+ o2-5       5.8525      5.855      5.8575          n/a
+ o3-5       5.8425      5.845      5.8475          n/a
+{DIV}
+''All frequencies measured in GHz''
+
+!!Point-to-Point (infrastructure, inter-link)
+Point-to-Point (PtP) links shall utilize spectrum that does not interfere with existing HamWAN Point-to-Multipoint operations. As such, all PtP links must be outside of FCC part 97 5 GHz spectrum. Utilization of part 15 spectrum is highly recommended. Bands and channels shall be selected to minimize interference with existing infrastructure.
+
+!!Justification
+!!!Synposis
+Site surveys for open spectrum.  Channel allocation to specific antennas.  Coordination with / notification to WWARA and other ISM/U-NII users.  Work with Core Routing and Links goals in mind when deciding on bandwidth to be allocated.
+
+!!!Spectrum of Interest
+The fundamental authoritative document for our spectrum of interest is the [http://transition.fcc.gov/oet/spectrum/table/fcctable.pdf|FCC Online Table of Frequency Allocations].  License classes available to HamWAN:
+#Amateur
+#ISM
+#U-NII
+Document page 42 lists 5.65GHz - 5.925GHz as Amateur (secondary).  This means 1.5kW provided no interference with primary services.  U-NII rules are documented in [http://www.ecfr.gov/cgi-bin/text-idx?c=ecfr&rgn=div5&view=text&node=47:1.0.1.1.16&idno=47#47:1.0.1.1.16.5|Title 47 Part 15.401] and onwards.  ISM rules are documented in [http://www.ecfr.gov/cgi/t/text/text-idx?c=ecfr&rgn=div5&view=text&node=47:1.0.1.1.18&idno=47|Title 47 Part 18].  ISM only allows for usage of 5.725GHz - 5.875GHz, which is already provided and protected by the Amateur allocation.  U-NII does allow for frequencies below 5.65GHz to be used, but with several restrictions:
+#5.15GHz - 5.25GHz is restricted to indoor use only.  This is not useful for HamWAN purposes.
+#5.25GHz - 5.35GHz and 5.47GHz - 5.65GHz (Amateur license is better above 5.65GHz) have a rough power restrictions of 250mW.  The exact details are more complicated.
+#Maximum antenna gain for the above bands is restricted to 6dBi.  When antenna gain exceeds this, power input to the antenna must be dropped proportionally.  This means an EIRP limit of 1W here regardless of antenna/amplifier combination.
+#Peak to average power ratio in the above bands is restricted to 13dB.
+#A transmit power control (TPC) mechanism is required to lower power by at least 6dB below 30dBm (1W) EIRP typical limit.  Note that this does NOT require an AUTOMATIC transmit power controller, just a manual one.
+#Devices in the above bands must employ a Dynamic Frequency Selection (DFS) radar avoidance mechanism.  Radar detection forces the channel to be vacated within 10 seconds and to not be used for 30 minutes.
+Despite the drastically lower power limits of U-NII licensed frequencies, they are a good option for HamWAN use when stations are in close proximity.  All the other U-NII requirements are presently met by the selected radio modem.  Therefore, the immediately useful frequencies for HamWAN are:
+#5.25GHz - 5.35GHz
+#5.47GHz - 5.925GHz
+This means an available spectrum of 100MHz and 455MHz, for a grand total of 555MHz!  275MHz of this is Amateur licensed 1.5kW spectrum and 280MHz is U-NII licensed 1W EIRP limited spectrum.
+
+Background reading on EIRP limits: http://www.webclasses.net/Courses/cwna/7.0/Core/cwna_U6_L1d.htm
+!!!Point to Multipoint Spectrum Allocation
+{HTML()}<style>
+.fixedwidth {
+    display: block;
+}
+.svg {
+    overflow-x:scroll;
+}
+</style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+$( document ).ready(function() {
+    $("#spectrumplan").scrollLeft(10000);
+});
+</script>
+{HTML}
+{DIV(class="svg" id="spectrumplan")}::{SVG(scale="18" src="tiki-download_wiki_attachment.php?attId=150")}{SVG}::{DIV}
+The above spectrum plan is for point-to-multipoint sectorized application.  It maximally avoids interference with 802.11a systems, and provides 10MHz guard bands so that co-located sectors do not self-interfere.  The guard bands also make it easier to construct bandpass channel filters should that be necessary.  All this safety comes at the cost of less usable bandwidth, and therefore, slower speed.  This initial band plan can be revisited and updated should the spectrum of sites allow for wider channels to be used, or should the guard bands become unnecessary.  For now, this is the safest play possible.
+
+!!!Point to Point Spectrum Allocation
+The frequencies used for point-to-point links in between cell sites will be allocated ad-hoc as conditions allow.  Network users do not need to care about where these links sit as long as they work.  The links may also be required to employ dynamic frequency selection to avoid interference.  This further underscores the pointlessness of planning or publishing their frequencies.
+

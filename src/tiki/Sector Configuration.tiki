@@ -1,0 +1,76 @@
+{CODE(caption="Sample Configuration from ETiger-S3 sector router")}
+# jan/02/1970 02:04:51 by RouterOS 6.29
+#
+/interface wireless
+set [ find default-name=wlan1 ] band=5ghz-onlyn channel-width=5mhz disabled=no \\
+    frequency=5880 frequency-mode=superchannel ht-rxchains=0,1 ht-txchains=0,1 l2mtu=\\
+    2290 mode=ap-bridge nv2-cell-radius=100 radio-name=K7WAN/ETiger-S3 ssid=HamWAN \\
+    tdma-period-size=4 wireless-protocol=nv2
+/interface vrrp
+add authentication=ah interface=ether1 name=vrrp1 password=<VRRP-KEY> version=2
+/interface wireless channels
+add band=5ghz-onlyn comment="Cell sites radiate this at 0 degrees (north)" frequency=\\
+    5920 list=HamWAN name=Sector1-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 120 degrees (south-east)" \\
+    frequency=5900 list=HamWAN name=Sector2-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 240 degrees (south-west)" \\
+    frequency=5880 list=HamWAN name=Sector3-5 width=5
+add band=5ghz-onlyn comment="Cell sites radiate this at 0 degrees (north)" frequency=\\
+    5920 list=HamWAN name=Sector1-10 width=10
+add band=5ghz-onlyn comment="Cell sites radiate this at 120 degrees (south-east)" \\
+    frequency=5900 list=HamWAN name=Sector2-10 width=10
+add band=5ghz-onlyn comment="Cell sites radiate this at 240 degrees (south-west)" \\
+    frequency=5880 list=HamWAN name=Sector3-10 width=10
+/ip pool
+add name=pool1 ranges=44.24.241.146-44.24.241.158
+/ip dhcp-server
+add address-pool=pool1 disabled=no interface=wlan1 lease-time=1h name=dhcp1
+/routing ospf instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 in-filter=\\
+    AMPR-default out-filter=AMPR-default redistribute-connected=as-type-1 \\
+    redistribute-other-ospf=as-type-1 redistribute-static=as-type-1 router-id=\\
+    44.24.241.134
+/snmp community
+set [ find default=yes ] addresses=44.24.240.0/20 name=hamwan
+/system logging action
+set 3 remote=44.24.255.4
+/ip settings
+set send-redirects=no
+/ip address
+add address=44.24.241.134/28 interface=ether1 network=44.24.241.128
+add address=44.24.241.145/28 interface=wlan1 network=44.24.241.144
+add address=44.24.241.142 interface=vrrp1 network=44.24.241.142
+/ip dhcp-server network
+add address=44.24.241.144/28 dns-server=44.24.244.1,44.24.245.1 domain=HamWAN.net \\
+    gateway=44.24.241.145 netmask=28 ntp-server=44.24.244.4,44.24.245.4
+/ip firewall mangle
+add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+add action=change-mss chain=forward new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+/ip service
+set ssh port=222
+/routing filter
+add action=accept chain=HamWAN prefix=44.24.240.0/20 prefix-length=20-32
+add action=reject chain=HamWAN
+add action=accept chain=HamWAN-default prefix=44.24.240.0/20 prefix-length=20-32
+add action=accept chain=HamWAN-default prefix=0.0.0.0/0
+add action=reject chain=HamWAN-default
+add action=accept chain=AMPR-default prefix=44.0.0.0/8 prefix-length=8-32
+add action=accept chain=AMPR-default prefix=0.0.0.0/0
+add action=reject chain=AMPR-default
+add action=accept chain=AMPR prefix=44.0.0.0/8 prefix-length=8-32
+add action=reject chain=AMPR
+/routing ospf interface
+add authentication=md5 authentication-key=<OSPF-KEY> interface=ether1 network-type=broadcast
+/routing ospf network
+add area=backbone network=44.24.241.128/28
+/snmp
+set contact="#HamWAN on irc.freenode.org" enabled=yes
+/system clock
+set time-zone-autodetect=no time-zone-name=GMT
+/system identity
+set name=ETiger-S3
+/system logging
+add action=remote topics=!debug,!snmp
+/system ntp client
+set enabled=yes primary-ntp=44.24.244.4 secondary-ntp=44.24.245.4
+{CODE}

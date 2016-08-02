@@ -1,0 +1,55 @@
+ For those unfamiliar with the issue, we are dealing with the FCC removing protections of Amateur Radio spectrum in the 5GHz band.  I have attached the exact (lengthy) FCC publication which announces this intention.  Page 6 shows the graphical view of what they're proposing, duplicated here:
+::{img attId="93"}::
+The Amateur Radio allocation is overlapping from 5.65-5.925GHz here.  Paragraph 97 on page 31 covers details of U-NII-4 rules, which sums up to it's OK to run high power, and it's OK to run it outdoors.  This is big trouble for amateur radio in this band, as amateurs will be denied entry onto sites that use this spectrum for unlicensed but commercial reasons.  We cannot compete with the money changing hands between commercial WISPs and site owners.
+
+Below is what I've drafted as a response to this proposed ruling.  Please read it over and comment.  We only have a few weeks to file the response and generate popular support to sway the FCC's opinion.  Please spread the word through the amateur radio community.  I have posted this message on our website at:
+
+https://www.hamwan.org/t/tiki-index.php?page=HamWAN+Response+to+FCC+NPRM+13-49&structure=HamWAN
+
+for easy sharing with others.  If you would like to file an official comment with the FCC about this, reference docket # 13-49 and file your comment using this website:
+
+http://apps.fcc.gov/ecfs/
+
+Please make it well thought out, with a good case (citing real spectrum uses), professional, structured, and hopefully representative of a group not just an individual's opinion.  Flooding the FCC with redundant rage will cause the good comments to get lost in the noise.  You can also sign our petition that opposes this proposed ruling here:
+
+https://www.change.org/petitions/federal-communications-commission-stop-expansion-of-unlicensed-use-of-amateur-radio-spectrum-in-the-5ghz-range
+
+Thanks for your help in opposing this, and spread the word nationally!
+
+
+__::HamWAN Response to FCC NPRM 13-49::__
+
+The new U-NII-4 band allocation and U-NII-3 25MHz expansion for unlicensed users will cause many problems for Amateur Radio networks operating in that spectrum.  I would like to point the commission to an example of one such band plan for the HamWAN network:
+
+https://www.hamwan.org/t/tiki-index.php?page=Spectrum+Allocation&structure=HamWAN
+
+To summarize the spectrum here textually, it is:
+
+Guard Band: 5.835-5.845GHz
+Channel 3 @ 240 degrees azimuth: 5.845-5.865GHz
+Guard Band: 5.865-5.875GHz
+Channel 2 @ 120 degrees azimuth: 5.875-5.895GHz
+Guard Band: 5.895-5.905GHz
+Channel 1 @ 0 degrees azimuth: 5.905-5.925GHz
+
+This arrangement allows co-existence of Amateur Radio digital networks on high up and densely populated radio sites, alongside commercial wireless service providers.
+
+It has been HamWAN’s experience that site owners, when deliberating Amateur Radio admission onto such sites, are primarily concerned about the impact to these unlicensed commercial wireless service providers.  So even though Amateur Radio licensing in the 5.65-5.925GHz range technically allows priority access to these frequencies for amateurs, the reality of the situation is the exact opposite.  Financial benefit to tower site owners is the true arbiter of spectrum usage at prominent sites.  Amateurs have no chance of competing with commercial spectrum interests in this band.  The U-NII-4 allocation, and the 25MHz U-NII-3 expansion effectively deny access to the frequencies for amateur usage at sites required for network creation.
+
+Given that there is great momentum behind deploying these free-to-use amateur networks right now, this will force the amateur community into a contentious position with the unlicensed commercial users of the spectrum, particularly at popular tower sites.  Amateurs will be forced to use the only tool left available to them, and that is to file complaints of interference against the unlicensed users until their operations at popular sites are either shut down or moved to different spectrum.
+
+HamWAN would like to achieve a peaceful co-existence with commercial unlicensed wireless network providers, by leveraging the amateur portion of the 5GHz spectrum as much as possible.  This view of cooperation is shared by other amateur organizations.
+
+Additionally, please consider extending the Amateur Radio allocation downwards to overlap the rest of the U-NII allocations.  The indoor and EIRP restrictions of these other allocations make them unlikely to be used by commercial tower tenants.  While the general environmental noise floor would be higher here, the value provided by not having to contend with commercial operations would make this a valuable resource for free-to-use amateur networks.
+
+In summary, we ask that the commission recognize the value that non-commercial microwave networks delivered by amateurs provide to their communities, and please revert the U-NII-4 allocation along with the 25MHz U-NII-3 expansion.  Any additional spectrum allocated to Amateur Radio in the 5GHz band would also go a long way to resolving the spectrum contention issues free amateur networks face.  We do not oppose the other changes in NPRM 13-49.
+
+Signed,
+
+Bart Kus
+
+HamWAN Chairman
+me@bartk.us
+PO Box 58903
+Renton, WA 98058
+

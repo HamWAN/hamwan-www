@@ -1,0 +1,53 @@
+{maketoc}
+!!!Common Header / Component Sizes
+||__Header__|__Bytes__
+Ethernet|14
+IP|20
+UDP|8
+ESP-SPI|4
+ESP-Sequence|4
+ESP-IV-AES-128|16
+ESP-AES-128-Pad|15 (variable, worst case)
+ESP-Pad-Length|1
+ESP-Next-Header|1
+ESP-HMAC-SHA1-96|12
+AH|24 (including 12-byte ICV)||
+Note: AES-128 is known as AES-CBC in Wireshark.
+
+!!!Common IPsec Overhead Figures
+||__IPsec Mode__|__Overhead Elements__|__Maximum Bytes Overhead__
+ESP-AES-128|ESP-SP + ESP-Sequence + ESP-IV-AES-128 + ESP-AES-128-Pad + ESP-Pad-Length + ESP-Next-Header|4 + 4 + 16 + 15 + 1 + 1 = 41
+ESP-AES-128 + ESP-HMAC-SHA1-96|ESP-AES-128 + ESP-HMAC-SHA1-96|41 + 12 = 53||
+
+!!!Calculating MTU Deratings For IPsec VPNs
+||__VPN Mode__|__Overhead Elements__|__Maximum Bytes Overhead__
+Transport: IP + ESP-AES-128|IP + ESP-AES-128|20 + 41 = 61
+Transport: IP + ESP-AES-128 + ESP-HMAC-SHA1-96|IP + ESP-AES-128 + ESP-HMAC-SHA1-96|20 + 41 + 12 = 73
+Transport: IP + NAT-T + ESP-AES-128 + ESP-HMAC-SHA1-96|IP + UDP + ESP-AES-128 + ESP-HMAC-SHA1-96|20 + 8 + 41 + 12 = 81
+Tunnel: IP + NAT-T + ESP-AES-128|IP + UDP + ESP-AES-128 + IP|20 + 8 + 41 + 20 = 89
+Tunnel: IP + NAT-T + ESP-AES-128 + ESP-HMAC-SHA1-96|IP + UDP + ESP-AES-128 + ESP-HMAC-SHA1-96 + IP|20 + 8 + 41 + 12 + 20 = 101||
+
+!!!Setting Specific MTUs
+In the Trusted User -> Edge Router VPN case, we use an IPsec tunnel with a maximum of 89 bytes of overhead.  Our interfaces are Ethernet so the MTUs are set for 1500.  Even though 1500 - 89 = 1411, larger MTUs do work in this configuration.  This is because the padding and alignment to the 1500 MTU Ethernet payloads does not result in the worst-case padding situation, so an overhead of 89 bytes is overly pessimistic in this specific case.
+
+To calculate the proper MTU for a "IP + UDP + ESP-AES-128 + IP" tunnel given a known host interface MTU, follow this process:
+
+#Take the host MTU and subtract the static header sections up to and including the IV: 1500 - (20 + 8 + 4 + 4 + 16) = 1448
+#This is the 4-byte-aligned start of your encrypted payload, and will always begin with an IP header for the tunnel, so subtract that as well: 1448 - 20 = 1428
+#This is the start of tunnel-MTU-consuming payload, and is also 4-byte aligned.  It causes 2 16-byte (AES 128-bit) cipher blocks to be used, with 16 (block size) - 4 (spillover from 20 byte IP header into the 2nd block) - 2 (ESP-Pad-Length and ESP-Next-Header fields) = 10 bytes left in the second block for more data.
+#The next (3rd) available block starts at 1448 - (2 * 16) = 1416.  Verify: 1428 - 1416 = 12.  This is the 10 bytes of available data + 2 bytes for the above mentioned ESP fields.
+#How many 16-byte blocks can be allocated in the remaining 1416 bytes?  1416 / 16 = 88.5, which really means 88.
+#These 88 blocks will provide for 88 * 16 = 1408 additional data bytes of storage.  Adding this to the existing 10 bytes of available storage in block 2 results in 1418 bytes of available MTU.
+#1418 is exactly the IPIP tunnel MTU observed through experimentation.
+
+There should be a much simpler formula to calculate all this instead of such a lengthy explanation.
+
+!!!Controlling ESP-HMAC in RouterOS
+The presence of ESP-HMAC in IPsec packets is set via __/ip ipsec proposal set # auth-algorithms__.  MD5, NULL and SHA1 are the available options.
+
+!!!Controlling ESP-Cipher in RouterOS
+The cipher used for ESP looks to be set in two places: __/ip ipsec proposal set # enc-algorithms__ and __/ip ipsec peer set # enc-algorithm__.  The first is used during ISAKMP negotiation, and the 2nd...?  Need to experiment more to see which overrides in RouterOS.
+
+!!!Userful Links
+[http://codeidol.com/community/telecom/ike-and-isakmp/7578/|IKE and ISAKMP]
+

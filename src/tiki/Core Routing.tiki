@@ -1,0 +1,110 @@
+^__NOTE:__  This page is deprecated. IP address allocations are now managed in the portal: [http://portal.hamwan.org/subnet/all]^
+A great candidate for this task looks to be MPLS-TE combined with OSPF-TE extensions.  I hope there's a way of configuring this without explicitly defining all possible ingress/egress combinations.  That would be a nightmare to maintain, given that each access node is 3 sectors.
+
+A great book on MPLS and MPLS-TE is ''MPLS Fundamentals'' by Luc De Ghein (Dec 1, 2006).
+
+[http://www.cisco.com/en/US/tech/tk365/technologies_white_paper09186a0080094e9e.shtml|Cisco OSPF Design Guide]
+
+Security concerns with IPv6 networks: [http://www.thc.org/thc-ipv6/]
+
+Look into IPSec + [http://www.youtube.com/watch?v=SfMeKnch3YA|SCEP]
+
+HamWAN has been assigned an IP block for our uses, which we advertise publicly. This block is 44.24.240.0/20
+
+!!!!Capitol Hill
+||Device|Internal Interface|Air Interface
+CP-R1|44.24.240.1|
+CP-PDU|44.24.240.2|
+CP-S1 (000)|44.24.240.3|
+CP-S2 (120)|44.24.240.4| 
+CP-S3 (240)|44.24.240.5|
+CP-Baldi (PtP1)|44.24.240.6|44.24.240.65
+CP-Paine (PtP2)|44.24.240.7|44.24.242.30/32||
+
+!!!!Paine
+||Device|Internal Interface|Air Interface
+Paine-R1|44.24.240.129/28|<NOT APPLICABLE>
+Paine-PDU|44.24.240.130/28|<NOT APPLICABLE>
+Paine-S1 (000)|44.24.240.131/28|44.24.240.145/28
+Paine-S2 (120)|44.24.240.132/28|44.24.240.161/28
+Paine-S3 (240)|44.24.240.133/28|44.24.240.177/28
+Paine-CapitolPark (PtP1)|44.24.240.134/28|44.24.242.31/32
+Paine-Shoreline (PtP2)|44.24.240.135/28|44.24.242.10/31
+Paine-Monroe (PtP3)|44.24.240.136/28|44.24.242.6/31
+Paine-Bruce (PtP4)|44.24.240.137/28|<UNKNOWN>||
+
+!!!!Baldi
+||Device|Internal Interface|Air Interface
+Router|44.24.240.193/28|<N/A>
+PDU|44.24.240.194/28|<N/A>
+Sector 1 (000)|44.24.240.195/28|44.24.240.209/28
+Sector 2 (120)|44.24.240.196/28|44.24.240.225/28
+Sector 3 (240)|44.24.240.197/28|44.24.240.241/28
+Point-to-Point Capitol Hill (PtP1)|44.24.240.198/28|<N/A>
+Point-to-Point Tacoma (PtP2)|44.24.240.199/28|<N/A>
+Point-to-Point Cascade (PtP3)|44.24.240.200/28|<N/A>
+Baldi-SRV1|44.24.240.201/28|<N/A>
+Baldi-SRV1-KVM|44.24.240.202/28|<N/A>
+baldi-aprs.kd7lxl.hamwan.net (VM on Baldi-SRV1)|44.24.240.203/28|<N/A>
+VRRP Gateway|44.24.240.206/32|<N/A>||
+
+!!!!Mirrormont
+||Device|Internal Interface|Air Interface
+Sector 3 (240)|44.24.241.3/28|44.24.241.17/28||
+
+!!!!Haystack
+||Device|Internal Interface|Air Interface
+Haystack-R1|44.24.241.33/28|N/A
+PDU|44.24.241.34/28|N/A
+Sector 1 (000)|44.24.241.35/28|44.24.241.49/28
+Sector 3 (240)|44.24.241.36/28|44.24.241.65/28
+Haystack-Paine|44.24.241.37/28|TBD
+Haystack-CapitolPark|44.24.241.38/28|TBD||
+
+!!!!Queen Anne
+||Device|Internal Interface|Air Interface
+''reserved for RB2011''|44.24.241.81/28|
+QueenAnne-Westin|44.24.241.82/28|44.24.242.35/31
+WW7PSR|44.24.241.83/28|44.24.240.28/28
+QueenAnne-Haystack|44.24.241.84/28||
+
+!!!Special Subnets
+44.24.242.0/23 - Used for PtP links by HamWAN infrastructure.  Allocated in adjacent pairs.
+
+||From IP|From Router|To IP|To Router
+44.24.242.0|Corvallis-ER1|44.24.242.1|NQ1E-CapitolPark
+44.24.242.2|Corvallis-ER1|44.24.242.3|Baldi-R1
+44.24.242.4|Corvallis-ER1|44.24.242.5|AE7SJ/Monroe-Paine
+44.24.242.6|Paine-Monroe|44.24.242.7|AE7SJ/Monroe-Paine
+44.24.242.8|Corvallis-ER1|44.24.242.9|K7NVH/Shoreline-Paine
+44.24.242.10|Paine-Shoreline|44.24.242.11|K7NVH/Shoreline-Paine
+44.24.242.12|Seattle-ER1|44.24.242.13|NQ1E-CapitolPark
+44.24.242.14|Seattle-ER1|44.24.242.15|Baldi-R1
+44.24.242.16|Seattle-ER1|44.24.242.17|AE7SJ/Monroe-Paine
+44.24.242.18|Seattle-ER1|44.24.242.19|K7NVH/Shoreline-Paine
+44.24.242.20|Corvallis-ER1|44.24.242.21|Seattle-ER1
+44.24.242.22|Seattle-ER1|44.24.242.23|Seattle-SRV1
+44.24.242.24/30|Corvallis-ER1|44.24.242.25|Corvallis-SRV1-KVM
+44.24.242.28|WE7X-Baldi|44.24.242.29|WE7X-Mirrormont
+44.24.242.30|CapitolPark-Paine|44.24.242.31|Paine-CapitolPark
+44.24.242.32|Seattle-ER1|44.24.242.33|PtP1-QueenAnne.Seattle
+44.24.242.34|PtP1-QueenAnne.Seattle|44.24.242.35|QueenAnne-Westin||
+
+
+44.24.244.0/23 - Used for anycast services.  Allocated in pairs between the consecutive /24s.
+
+||Primary|Secondary|Service
+44.24.244.1|44.24.245.1|DNS - Recursive
+44.24.244.2|44.24.245.2|DNS - Authoritative
+44.24.244.3|44.24.245.3|RADIUS
+44.24.244.4|44.24.245.4|NTP|
+44.24.244.5|44.24.245.5|[https://portal.hamwan.org]|
+44.24.244.6|44.24.245.6|[https://encrypted.hamwan.org]||
+
+!!!User Subnets
+The following are primarily allocated top-down, with best-effort fragmentation fills that ignore the top-down order.
+||Prefix|User
+44.24.255.128/25|AE7SJ
+44.24.255.0/25|K7NVH
+44.24.254.255/32|WE7X||
+

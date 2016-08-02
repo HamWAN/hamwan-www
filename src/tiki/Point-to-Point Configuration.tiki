@@ -1,0 +1,66 @@
+Not good instructions, but here's a sample config of one of our PtP modems.  It's pretty minimal.  The idea is just to allocate a dedicate IP pair for the wireless link, and let OSPF handle the traffic.  So nothing fancy here:
+
+{CODE(caption="PtP Sample Config")}
+[eo@ETiger.SnoDEM] > /export
+# jul/12/2016 10:11:33 by RouterOS 6.34.4
+# software id = 6M0M-F9G3
+#
+/interface bridge
+add name=loopback0
+/interface wireless
+set [ find default-name=wlan1 ] band=5ghz-onlyac disabled=no frequency=5700 frequency-mode=superchannel nv2-cell-radius=100 nv2-preshared-key=\\
+    XXXXXXXXX radio-name=ETiger.SnoDEM/K7WAN scan-list=5700 ssid=HamWAN tdma-period-size=4 wireless-protocol=nv2
+/interface vrrp
+add authentication=ah interface=ether1 name=vrrp1 password=XXXXXXXXX version=2
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/routing ospf instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 in-filter=Ham-default out-filter=Ham-default redistribute-bgp=as-type-1 \\
+    redistribute-connected=as-type-1 redistribute-other-ospf=as-type-1 router-id=44.24.240.135
+/snmp community
+set [ find default=yes ] addresses=44.24.240.0/20 name=hamwan
+/system logging action
+set 3 remote=44.24.244.8
+/ip settings
+set send-redirects=no
+/ip address
+add address=44.24.240.135/28 interface=ether1 network=44.24.240.128
+add address=44.24.242.51 interface=wlan1 network=44.24.242.50
+add address=44.24.240.142 interface=vrrp1 network=44.24.240.142
+/ip dns
+set servers=44.24.244.1,44.24.245.1
+/ip firewall mangle
+add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+/ip service
+set ssh port=222
+/routing filter
+add action=accept chain=HamWAN-default prefix=44.24.240.0/20 prefix-length=20-32
+add action=accept chain=HamWAN-default prefix=0.0.0.0/0
+add action=reject chain=HamWAN-default
+add action=accept chain=Ham-default prefix=44.0.0.0/8 prefix-length=8-32
+add action=accept chain=Ham-default prefix=0.0.0.0/0
+add action=reject chain=Ham-default
+/routing ospf interface
+add authentication=md5 authentication-key=XXXXXXXXX interface=wlan1 network-type=point-to-point
+add authentication=md5 authentication-key=XXXXXXXXX interface=ether1 network-type=broadcast
+/routing ospf network
+add area=backbone network=44.24.240.128/28
+add area=backbone network=44.24.242.50/32
+/snmp
+set contact="#HamWAN on irc.freenode.org" enabled=yes
+/system clock
+set time-zone-autodetect=no time-zone-name=America/Los_Angeles
+/system identity
+set name=ETiger.SnoDEM
+/system leds
+set 1 interface=wlan1
+/system logging
+add action=remote topics=!debug,!snmp
+/system ntp client
+set enabled=yes primary-ntp=44.24.244.4 secondary-ntp=44.24.245.4
+/system routerboard settings
+set cpu-frequency=720MHz
+/tool bandwidth-server
+set authenticate=no
+[eo@ETiger.SnoDEM] >
+{CODE}

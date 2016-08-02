@@ -1,0 +1,32 @@
+!Site Survey
+#Take 360 degree panorama
+#Investigate antenna mount points
+#Investigate indoor rackspace.
+#Map, measure route between rack and antenna mounts
+#Investigate building entry point
+#Investiage power, grounding
+
+!Planning
+#Make bill of materials
+#Submit plan to board for spending approval.
+#Purchase
+
+!Pre-deployment
+#Allocate subnets and IP addresses on http://portal.hamwan.org/
+#Upgrade all routers' firmware.
+#Configure and label all routers.
+#Configure PDU.
+#Install OS on server and configure OOB
+#Pack lunch.
+
+!Deployment
+#Verify mount points / plan with site sponsor
+#Install
+#Stay hydrated
+#Test
+#Cleanup
+#Take pictures for Ryan
+
+!Post-deployment
+#Verify performance
+#Check logs for anomalies

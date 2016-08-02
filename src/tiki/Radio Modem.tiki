@@ -1,0 +1,45 @@
+{maketoc}
+!2nd Generation (current)
+!!Client and Sectors
+2nd generation HamWAN sites use MIMO modems. A MIMO modem and dish at the client site may improve speeds, but the single-chain 1st generation modem is still 100% compatible.
+!!!RB912UAG-5HPnD-OUT (MIMO)
+|| | |RX sensitivity|TX power|
+802.11a| @ 6 Mbps  | -96 dBm| 30 dBm|
+               | @ 54 Mbps| -80 dBm| 27dBm|
+802.11n| @ MCS0| -96 dBm| 30 dBm|
+                    | @ MCS7| -78 dBm | 24dBm ||
+[http://i.mt.lv/routerboard/files/basebox-140526113721.pdf|RB912UAG-5HPnD-OUT datasheet]
+The RB912UAG-5HPnD (board only, otherwise identical) is also recommended when paired with a shielded outdoor housing, like the RF Elements SBX-S-CC-2SMA.
+!!Point-to-Point
+!!!RB921UAGS-5SHPacD-NM (MIMO)
+~~#F00:Warning: These don't support 5 or 10 MHz channels, which are required for sectors and clients!~~
+This is the highest power MIMO radio we've seen from Mikrotik.
+|| | |RX sensitivity|TX power|
+802.11a     | @ 6 Mbps  | -96 dBm| 33 dBm|
+                    | @ 54 Mbps| -81 dBm| 29 dBm|
+802.11n/ac| @ MCS0| -96 dBm| 32 dBm|
+                    | @ MCS7| -77 dBm | 29 dBm |
+                    | @ MCS9| -72 dBm | 25 dBm ||
+[http://www.roc-noc.com/pdf/groove/NetMetal.pdf|RB921UAGS-5SHPacD-NM datasheet]
+
+!1st Generation
+!!Client, Sector, and Point-to-Point
+!!!Metal 5SHPn
+|| | |RX sensitivity|TX power|
+802.11a| @ 6 Mbps| -93 dBm| 31 dBm|
+| @ 54 Mbps| -77 dBm| 27dBm|
+802.11n| @ MCS0| -93 dBm| 30 dBm|
+| @ MCS7| -71 dBm | 26dBm ||
+!!!!Suppliers
+||Type|Supplier|Cost|Notes|
+Metal 5SHPn|[http://www.wifi-stock.com/details/metal_5shpn.html|wifi-stock.com]|$76.00|This supplier is not well known to me (BartKus)|
+Metal 5SHPn|[http://streakwave.com/itemdesc.asp?ic=RBMetal-5SHPn&eq=&Tp=|streakwave.com]|$91.00|Have stocking issues / do not report stock|
+Metal 5SHPn|[http://www.roc-noc.com/mikrotik/routerboard/RBMetal5SHPn.html|r0c-n0c.com]|$99.00||
+
+!!!Alternatives
+#MikroTik Metal 5SHPn
+##Its ability to do MPLS-TE will be key to a reliable high speed network.  There are many other advantages, such as the ability to run up to 1.3W of TX.
+
+!!!Notes
+The power adapters that come with the 5SHPn units take up too many slots if the APC AP7900 PDU is used.  These power adapters may need to be replaced by some other 24V/1A supply, or perhaps a 120VAC right-angle adapter or pigtail adapter can be used.
+

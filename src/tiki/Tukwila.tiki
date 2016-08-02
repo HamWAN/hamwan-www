@@ -1,0 +1,18 @@
+{img fileId="27" thumb="y" link="http://dfcolo.com/" width="450px"}
+
+The Tukwila site is hosted gratis by Digital Fortress. They provide half a rack, 25 Mbps bandwidth, and roof space for two antennas.
+
+!!Inventory
+||2|RB912UAG-5HPnD-OUT
+2|ARC ARC-DA5830SD1
+500 ft|Ubiquiti ToughCable
+1|((Switched PDU|APC AP7900))
+1|((Ethernet Switch - 8 port|RB2011UAS-RM))
+1|Old server||
+
+!!Rooftop
+{img fileId="36" thumb="y" width="1200px" styleimage="max-width:100%;height:auto;"}
+[https://photosynth.net/view.aspx?cid=25baaf17-6bab-4c94-94c2-8e6e349ab624|Photosynth panorama from Digital Fortress roof top]
+!!!Tukwila-Baldi PtP
+{img fileId="37" thumb="y" desc="desc" width="300"}
+

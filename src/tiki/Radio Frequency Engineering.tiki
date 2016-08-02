@@ -1,0 +1,23 @@
+{toc}
+!!!Sector Antenna Coverage
+It's important to establish some parameters on how the sector antennas should perform; what type of radiation pattern they should have in the vertical direction.  Below is a scaled representation of desired coverage from Cougar Mtn, radiating 25 miles north to Paine Field.
+
+::{SVG(scale="4" src="tiki-download_wiki_attachment.php?attId=85")}{SVG}::
+
+The downtilt from Cougar to Paine is a mere 0.67 degrees.  This assumes that Paine Field lies at sea level, which isn't true, but for the purposes of this example it'll do.
+
+A good rule of thumb is to put the vertical upper -3dB point of the sector antenna at the desired coverage radius.  In this case that's 25 miles.  Assuming the sector has a vertical beamwidth of 5 degrees as defined by its -3dB points, that would land the other -3dB curve at about 3 miles from Cougar.  Clients within this shadow area must rely on their close proximity to help with the link signal budget and overcome the low gains of the sector antenna at these steeper angles.  The peak signal strength with this geometry lands at 5.3 miles from Cougar.
+
+Perhaps there are more optimal methods of vertical alignment, but this seems like a good start.
+
+In order to get these tiny angles just right, a station on the ground at the 5.3 mile radius can be used to report signal strength.  The installer can perform minor tilt adjustments to the sector while getting real-time feedback from the remote signal meter.
+
+!!!General Notes on Radio Frequency Engineering
+Let's collect all site + link data here on the wiki, but keep a mirror using [http://www.cplus.org/rmw/rmonline.html|Radio Mobile Online].  This makes propagation studies very easy.
+
+If you would like to suggest/volunteer/donate a site, please send an email to the mailing list or post in the forums.
+
+!!!Emission Regulations
+#[http://en.wikipedia.org/wiki/Types_of_radio_emissions|Emission Designators]
+#[http://www.ecfr.gov/cgi-bin/text-idx?c=ecfr&rgn=div8&view=text&node=47:5.0.1.1.6.4.157.3&idno=47|Types of emissions allowed on amateur radio] (click prev/next to browse to the cited sections from this page)
+

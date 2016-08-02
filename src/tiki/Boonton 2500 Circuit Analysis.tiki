@@ -1,0 +1,173 @@
+!!!Summary
+The original Boonton 2500 circuit is found in the {FILE(type="gallery" fileId="9")}product manual{FILE}.  The aim of this calibrator is to closely approximate the characteristics of the original design.  To this aim, let's evaluate the original circuit in the various modes of operation.
+
+!!!Power Supply
+Everything in the schematic to the left of the "ZERO" switch just amounts to one big fancy (and precise!) 10VDC power supply.  For the purposes of analysis, we'll replace the whole left side with an ideal 10VDC source.
+
+!!!Source Resistance
+The settings of the Source Resistance 3-position rotary switch simply activate balanced resistances in series with the output, but prior to the output jack.  These balanced series resistances have no affect on the output voltage, but as the switch name says, only affect the source resistance.  These components will be ignored in the analysis of the circuit, giving the equivalent behavior of "Low" being selected.
+
+!!!Zero Switch
+This switch simply connects or disconnects the 10VDC supply from the rest of the calibrator.  For the purposes of analysis, we will assume it is allowing the 10VDC reference voltage to be connected.
+
+!!!What's Left?
+A fancy resistor network!  Now let's analyze this network's behavior in each of the Range selector positions.
+
+!!!Range 0 Voltage
+Here is the equivalent circuit for Range 0:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=5")}{SVG}::
+The only reference to ground in this circuit is between R21 and R22.  The rest of the circuit is floating.  Therefore, no matter the current through R21/R22, the voltages Out+ and Out- will always be balanced and symmetrical about GND.  Given this symmetry we can simplify the analysis by combining these two resistors as follows:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=9")}{SVG}::
+If we want to solve for the voltage between Out+ and Out-, it's important to realize that this voltage is exactly the voltage across R21+22.  To figure out that voltage, we must know the current flowing through that resistor.  This resistor is part of a series, involving R3, R21+22 and R4.  We perform series reduction here:
+::{SVG(scale="0.33" src="tiki-download_wiki_attachment.php?attId=10")}{SVG}::
+Now if we want to know the current through R3+21+22+4, we must know the voltage across it.  To that end, we merge R2 with R3+21+22+4:
+::{SVG(scale="0.3" src="tiki-download_wiki_attachment.php?attId=12")}{SVG}::
+~np~$$\\begin{align}
+R_{2\\|(3+21+22+4)} &= \\frac{1}{\\frac{1}{10} + \\frac{1}{2000000}} \\\\
+&\\approx 9.99995Ω
+\\end{align}$$~/np~
+Finally, to figure out the voltage across this combined resistance, we must know the current flowing through it.  To do this, we collapse the series series R1 into this new resistance:
+::{SVG(scale="0.21" src="tiki-download_wiki_attachment.php?attId=13")}{SVG}::
+~np~$$\\begin{align}
+R_{net} &= 9990 + 9.99995 \\\\
+&= 9999.99995Ω \\\\
+&\\approx 10kΩ \\\\
+\\end{align}$$~/np~
+Now, current from 10V across 10kΩ is:
+~np~$$I_{net} = \\frac{10V}{10kΩ} = 1mA$$~/np~
+Say, who is this dapper fellow and why is he rolling around so much in his grave?
+{img attId="14" align="center" height="50%" width="50%" desc="\\"I do things better than you\\""}
+Moving right along, now that we have the current we can determine the voltage across ~np~\\(R_{2\\|(3+21+22+4)}\\)~/np~:
+~np~$$V_{2\\|(3+21+22+4)} = 1mA \\times 9.99995Ω = 9.99995mV$$~/np~
+With this voltage in hand we can find the current through \\(R_{3+21+22+4}\\) alone:
+~np~$$I_{3+21+22+4} = \\frac{9.99995mV}{2MΩ} = 4.999975nA$$~/np~
+With this current in hand we can finally find the voltage across R21+22, and therefore, between Out+ and Out-
+~np~$$V_{out} = 4.999975nA \\times 1.8kΩ = 8.999955μV$$~/np~
+According to the specifications, the target voltage for Range 0 is 9μV.  Therefore, the error is:
+~np~$$V_{error} = \\frac{8.999955μV - 9μV}{9μV} = -0.0005\\%$$~/np~
+of the specified voltage, and well within the ±0.15% tolerance specification for the instrument.
+
+!!!Range 0 Source Resistance
+The source resistance of a voltage source is defined as the open circuit voltage divided by the closed circuit current:
+~np~$$Rsource = \\frac{V_{open\\ circuit}}{I_{closed\\ circuit}}$$~/np~
+In the previous section we figured out the open circuit voltage.  To determine the closed circuit current we simply put a dead short between the Out+ and Out- nodes of our circuit.  This effectively ties R3 and R4 together like so and eliminates the impact of R21 and R22:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=18")}{SVG}::
+Since the current flowing here is going through R3 and R4, we combine these series resistors:
+::{SVG(scale="0.3" src="tiki-download_wiki_attachment.php?attId=17")}{SVG}::
+~np~$$R_{3+4} = 999100Ω + 999100Ω = 1998200Ω$$~/np~
+To get the current through this we have to determine the voltage across it, so we collapse it with R2:
+~np~$$R_{2\\|(3+4)} = \\frac{1}{\\frac{1}{10Ω} + \\frac{1}{1998200Ω}} = 9.9999499552\\dots Ω$$~/np~
+Finally, the network resistance can be calculated:
+~np~$$R_{net} = 9990Ω + 9.9999499552\\dots Ω = 9999.9999499552\\dots Ω$$~/np~
+And the network current:
+~np~$$I_{net} = \\frac{10V}{9999.9999499552\\dots Ω} = 1.000000005\\dots mA$$~/np~
+Now this can be used to determine the voltage across the bottom part of the network:
+~np~$$V_{2\\|(3+4)} = 1.000000005\\dots mA \\times 9.9999499552\\dots Ω = 9.999950005\\dots mV$$~/np~
+With this we can finally determine our closed circuit current:
+~np~$$I_{3+4} = \\frac{9.999950005\\dots mV}{1998200Ω} = 5.00447903nA$$~/np~
+With all the required variables we can now solve for source resistance:
+~np~$$R_{source} = \\frac{8.999955μV}{5.00447903nA} = 1798.379999\\dots Ω$$~/np~
+The alternate way of calculating this source resistance is to replace the voltage source with a wire, re-introduce R21 and R22 and then reduce the network to find resistance between Out+ and Out-.  Both methods arrive at the same answer.
+
+!!!Range 1 Voltage and Source Resistance
+Here is the equivalent circuit for Range 1, which is supposed to produce 90μV:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=22")}{SVG}::
+I also got tired of solving things by hand, so I wrote a little program:
+{CODE(caption="Boonton 2500 Solver" wrap="0" colors="python")}#!/usr/bin/python
+import sys
+V1 = float(10)
+R1 = float(sys.argv[1])
+R2 = float(sys.argv[2])
+R3 = float(sys.argv[3])
+R4 = float(sys.argv[4])
+R21_22 = float(1800)
+Vtgt = float(sys.argv[5])
+
+Ra = R3 + R21_22 + R4
+Rb = 1/((1/R2)+(1/Ra))
+Rnet = R1 + Rb
+Inet = V1 / Rnet
+Vb = Inet * Rb
+Ia = Vb / Ra
+Vout = Ia * R21_22
+Verror = (Vout - Vtgt) / Vtgt
+
+Ra = R3 + R4
+Rb = 1/((1/R2)+(1/Ra))
+Rnet = R1 + Rb
+Inet = V1 / Rnet
+Vb = Inet * Rb
+Ia = Vb / Ra
+Rsource = Vout / Ia
+
+print 'Vout = {0} V, error = {1} %, Rsource = {2} ohms'.format(Vout, Verror * 100, Rsource)
+{CODE}
+Here are the results for Range 1:
+~np~$$\\begin{align}
+V_{out} &= 89.9955452205\\dots μV \\\\
+V_{error} &= -0.00494975498715\\dots \\% \\\\
+R_{source} &= 1798.38008019\\dots Ω \\\\
+\\end{align}$$~/np~
+The error is starting to creep up!
+
+!!!Range 2 Voltage and Source Resistance
+Here is the equivalent circuit for Range 2, which is supposed to produce 900μV:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=23")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 899.595182168\\dots μV \\\\
+V_{error} &= -0.0449797591084\\dots \\% \\\\
+R_{source} &= 1798.38072867\\dots Ω \\\\
+\\end{align}$$~/np~
+The error continues to creep up!
+
+!!!Range 3 Voltage and Source Resistance
+Here is the equivalent circuit for Range 3, which is supposed to produce 9mV:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=24")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 9 mV \\\\
+V_{error} &= 0 \\% \\\\
+R_{source} &= 1798.38 Ω \\\\
+\\end{align}$$~/np~
+Wow, bang on values!  R1 and R2 are now parasitic elements and can be removed from the circuit for analysis purposes.  In practice, it's good to leave R2 in there to put a healthy current draw on the voltage reference and keep it stable.
+
+!!!Range 4 Voltage and Source Resistance
+Here is the equivalent circuit for Range 4, which is supposed to produce 90mV:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=25")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 90 mV \\\\
+V_{error} &= 0 \\% \\\\
+R_{source} &= 1783.8 Ω \\\\
+\\end{align}$$~/np~
+Again, bang on values and source resistance improved a bit.
+
+!!!Range 5 Voltage and Source Resistance
+Here is the equivalent circuit for Range 5, which is supposed to produce 900mV:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=26")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 900 mV \\\\
+V_{error} &= 0 \\% \\\\
+R_{source} &= 1638 Ω \\\\
+\\end{align}$$~/np~
+Again, bang on values and source resistance continues to improve.
+
+!!!Range 6A Voltage and Source Resistance
+Here is the equivalent circuit for Range 6A, which is supposed to produce 1.8V:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=27")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 1.8 V \\\\
+V_{error} &= 0 \\% \\\\
+R_{source} &= 1476 Ω \\\\
+\\end{align}$$~/np~
+
+!!!Range 6B Voltage and Source Resistance
+Here is the equivalent circuit for Range 6B, which is supposed to produce 4.5V:
+::{SVG(scale="0.4" src="tiki-download_wiki_attachment.php?attId=28")}{SVG}::
+~np~$$\\begin{align}
+V_{out} &= 4.5 V \\\\
+V_{error} &= 0 \\% \\\\
+R_{source} &= 990 Ω \\\\
+\\end{align}$$~/np~
+
+!!!Conclusion
+The circuit meets all specifications as the manual claims.  However, Ranges 0 through 2 could use some design improvement.  Range 2 in particular creeps all the way up to 0.05% error.  With the instrument specified at 0.15% error, this is eating into the error budget quite a bit.  While it's probably important to keep the source resistance characteristics close to what they are on the original design, I doubt the original design's voltage errors are worthy of being kept in a new instrument.  Let the device tolerances be the sources of error, not the design itself.
+

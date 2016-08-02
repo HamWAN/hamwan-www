@@ -1,0 +1,13 @@
+!Integrated NIC MAC addresses
+||Device Type|Network Port|MAC Address
+iLO 3|iLO Dedicated Network Port|e4:11:5b:d5:d3:c0  
+NIC|Port 1|e4:11:5b:d6:08:ac  
+iSCSI|Port 1|e4:11:5b:d6:08:ad  
+NIC|Port 2|e4:11:5b:d6:08:ae  
+iSCSI|Port 2|e4:11:5b:d6:08:af  
+NIC|Port 3|e4:11:5b:d6:08:e4  
+iSCSI|Port 3|e4:11:5b:d6:08:e5  
+NIC|Port 4|e4:11:5b:d6:08:e6  
+iSCSI|Port 4|e4:11:5b:d6:08:e7||
+
+

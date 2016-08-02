@@ -1,0 +1,142 @@
+#Setup a ((Client Node Configuration|Client Node))
+#Ask on the mailing list(s) if you can be an Uplink Node.  There are resource, technical competency, and security requirements that need to be met.
+#If approved, you'll be assigned a PtP IP pair and an OSPF password.
+#{CODE(caption="Remove default gateways")}
+/ip dhcp-client
+set [find] add-default-route=no
+{CODE}
+#{CODE(caption="Remove LAN DHCP client")}
+/ip dhcp-client
+remove <ITEM # OF ether1 CLIENT>
+{CODE}
+#{CODE(caption="Remove NAT rules")}
+/ip firewall nat
+remove [find]
+{CODE}
+#{CODE(caption="Configure static IP for the modem on your LAN")}
+/ip address
+add address=<MODEM LAN ADDRESS>/<LAN MASK> interface=ether1
+{CODE}\t 
+#{CODE(caption="Generate a private key and a Certificate Signing Request (CSR)")}
+#Be sure to protect the private key with a password when prompted to do so!
+openssl genrsa -des3 -out <CALLSIGN>-key.pem 4096
+#Be sure to use CN=<CALLSIGN> in your CSR
+openssl req -new -key <CALLSIGN>-key.pem -out <CALLSIGN>.csr
+{CODE}
+#Contact the HamWAN Certificate Authority (CA) to have your CSR signed
+##Right now, this means emailing your CSR to me@bartk.us.  Will make this a better process later.
+#{CODE(caption="This is how the Certificate Authority operator will sign your request and generate your certificate")}
+openssl x509 -req -days 365 -in <CALLSIGN>.csr -CA cacert.pem -CAkey private/cakey.pem -out <CALLSIGN>-cert.pem -CAserial serial
+{CODE}
+#Copy the <CALLSIGN>-cert.pem you got from the CA to your modem
+#Copy the <CALLSIGN>-key.pem to your modem.  Be sure to leave it encrypted.
+#Copy the K7WAN-cert.pem to your modem.  This file is attached to this page.  Will make this a better process later.
+#{CODE(caption="Import the certificates and your private key IN THIS ORDER")}
+/certificate
+import file-name=K7WAN-cert.pem
+# Just hit enter when prompted for password.
+set 0 name=HamWAN
+import file-name=<CALLSIGN>-cert.pem
+# Just hit enter when prompted for password.
+set 1 name=<CALLSIGN>
+import file-name=<CALLSIGN>-key.pem
+# Provide your private key encryption password here for the modem to decrypt it.
+{CODE}
+#Verify that you have one certificate named "K7WAN" and one certificate named <CALLSIGN> that has the K and T flags set in front of it.
+#{CODE(caption="Configure a static route for the IPIP tunnel")}
+/ip route
+add comment=Corvallis-ER1 distance=1 dst-address=198.178.136.80/32 gateway=<LAN DEFAULT GATEWAY>
+{CODE}
+#{CODE(caption="Create an IPIP interface for the tunnel")}
+/interface ipip
+add comment="<CALLSIGN> - Corvallis.  MTU set for ESP+NAT-T." local-address=<MODEM LAN ADDRESS> mtu=1418 name=ipip1 remote-address=198.178.136.80
+{CODE}
+#{CODE(caption="Define the ESP-only IPsec proposal")}
+/ip ipsec proposal
+add auth-algorithms=null enc-algorithms=aes-128 name=vpn-esp
+{CODE}
+#{CODE(caption="Define the Corvallis-ER1 IPsec peer")}
+/ip ipsec peer
+add address=198.178.136.80/32 auth-method=rsa-signature certificate=<CALLSIGN> enc-algorithm=aes-128 nat-traversal=yes remote-certificate=K7WAN
+{CODE}
+#{CODE(caption="Define the Corvallis-ER1 IPsec policy")}
+/ip ipsec policy
+add dst-address=198.178.136.80/32 proposal=vpn-esp protocol=ip-encap \\
+  sa-dst-address=198.178.136.80 sa-src-address=<MODEM LAN ADDRESS> src-address=<MODEM LAN ADDRESS>/32 tunnel=yes
+{CODE}
+#{CODE(caption="Configure the addresses on your IPIP tunnel")}
+/ip address
+add address=<HIGHER IP FROM PTP PAIR>/32 network=<LOWER IP FROM PTP PAIR> interface=ipip1
+{CODE}
+#Notify a HamWAN network operator to let them know IPsec is ready on your end.
+#Once Corvallis-ER1 has been configured to accept your tunnel
+##{CODE(caption="Initiate the IPsec association")}
+/ping <LOWER IP FROM PTP PAIR>
+# Initial ping may timeout, but subsequent pings should work
+{CODE}
+##{CODE(caption="Verify the tunnel is being used")}
+/tool traceroute <LOWER IP FROM PTP PAIR>
+# Should display only one hop
+{CODE}
+##{CODE(caption="Check for mature security associations")}
+/ip ipsec installed-sa print
+# Should display state=mature
+{CODE}
+##{CODE(caption="Verify MTUs are working OK")}
+/ping <LOWER IP FROM PTP PAIR> size=1418 do-not-fragment
+# Should result in clean pings with no error messages
+{CODE}
+#{CODE(caption="Define HamWAN routing filters")}
+/routing filter
+add action=accept chain=HamWAN-default prefix=44.24.240.0/20 prefix-length=20-32
+add action=accept chain=HamWAN-default prefix=0.0.0.0/0
+add action=reject chain=HamWAN-default
+add action=accept chain=Ham-default prefix=44.0.0.0/8 prefix-length=8-32
+add action=accept chain=Ham-default prefix=0.0.0.0/0
+add action=reject chain=Ham-default
+{CODE}
+#{CODE(caption="Configure OSPF instance")}
+/routing ospf instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 in-filter=Ham-default out-filter=Ham-default redistribute-bgp=as-type-1 \\
+    redistribute-connected=as-type-1 redistribute-other-ospf=as-type-1 router-id=<HIGHER IP FROM PTP PAIR>
+{CODE}
+#{CODE(caption="Configure OSPF interface")}
+/routing ospf interface
+add authentication=md5 authentication-key=<OSPF PASSWORD> interface=ipip1 network-type=point-to-point
+{CODE}
+#{CODE(caption="Configure OSPF network")}
+/routing ospf network
+add area=backbone network=<LOWER IP FROM PTP PAIR>/32
+{CODE}
+#{CODE(caption="Verify you are receiving routes from Corvallis-ER1")}
+/ip route print interval=1
+# You should see hundreds of new routes in your routing table
+{CODE}
+#{CODE(caption="Advertise your uplink gateway to the microwave network")}
+/routing ospf interface
+add authentication=md5 authentication-key=<OSPF PASSWORD> interface=wlan1 network-type=broadcast
+/routing ospf network
+add area=backbone network=<WLAN1 NETWORK ADDRESS AND MASK, NOT THE IP ASSIGNED TO WLAN1>
+# For example, 44.24.240.1/24 wlan1 IP means a 44.24.240.0/24 network address
+{CODE}
+##In the case of PtP links, you'd use network-type=point-to-point and define network= as the remote IP/32.
+#{CODE(caption="Verify two OSPF neighbors are active")}
+/routing ospf neighbor print
+# Make sure state="Full" on both neighbor lines
+{CODE}
+#Integrate your home network (assumed on RFC1918 space) into HamWAN routing
+##{CODE(caption="Define an RFC1918 address list")}
+/ip firewall address-list
+add address=10.0.0.0/8 list=RFC1918
+add address=172.16.0.0/12 list=RFC1918
+add address=192.168.0.0/16 list=RFC1918
+{CODE}
+##{CODE(caption="Perform NAT on traffic coming into HamWAN from RFC1918 space")}
+/ip firewall nat
+add action=masquerade chain=srcnat src-address-list=RFC1918
+{CODE}
+##{CODE(caption="On your main LAN router, add HamWAN + AMPR routes")}
+/ip route
+add comment="HamWAN + AMPR" disabled=no distance=1 dst-address=44.0.0.0/8 gateway=<MODEM IP ADDRESS> scope=30 target-scope=10
+{CODE}
+

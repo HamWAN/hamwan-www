@@ -1,0 +1,67 @@
+{toc}
+HamWAN Labs provides testing apparatus to verify any claims made by hardware suppliers for components used in HamWAN networks.  HamWAN Labs also does original component design where commercial off the shelf offerings are not sufficient.  Here is a partial list of equipment available at HamWAN Labs.
+
+Analyzers:
+#{FILE(type="gallery" fileId="19")}HP 8566A 100Hz-22GHz Spectrum Analyzer{FILE}
+#[http://www.mfjenterprises.com/pdffiles/MFJ-269.pdf|MFJ-269 Antenna Analyzer]
+#[http://cp.literature.agilent.com/litweb/pdf/08903-90079.pdf|HP 8903B Audio Analyzer]
+Oscilloscopes:
+#[http://cp.literature.agilent.com/litweb/pdf/54542-97016.pdf|HP 54540A Oscilloscope]
+##[http://www.home.agilent.com/en/pd-1000000979%3Aepsg%3Apro-pn-10441A/101-2m-miniature-passive-probe-with-probe-id|HP 10441A Probe]
+##Various generic 100MHz 10x/1x probes
+Power Supplies:
+#[http://cp.literature.agilent.com/litweb/pdf/5962-8196.pdf|HP 6632B 0-20V Power Supply]
+#[http://cp.literature.agilent.com/litweb/pdf/5962-8196.pdf|HP 6634B 0-100V Power Supply]
+#[http://www.histest.com/blog/files/2012/02/Mastech-HY3005D-Power-Supply-Users-Manual.pdf|Shenzhen Mastech HY3005D-3 Power Supply]
+Frequency Counters:
+#HC F1000 Frequency Counter
+#{FILE(type="gallery" fileId="11")}EIP 451 Frequency Counter{FILE}
+Signal Sources:
+#[http://cp.literature.agilent.com/litweb/pdf/08116-90003.pdf|HP 8116A Pulse / Function Generator]
+#[http://cp.literature.agilent.com/litweb/pdf/08660-90090.pdf|HP 8660C Signal Generator]
+##HP 86632B Modulation Section
+##HP 86603A RF Section
+#Avantek SF6-0994M YIG Oscillator: 4.0-8.0GHz +15dBm
+#{FILE(type="gallery" fileId="22")}FE-5680A Rubidium Atomic Frequency Standard{FILE}
+Multimeters:
+#[http://cp.literature.agilent.com/litweb/pdf/03478-90009.pdf|HP 3478A Multimeter]
+#[http://manuals.harborfreight.com/manuals/98000-98999/98674.pdf|Cen-Tech P98674 Multimeter]
+#[http://www.vellemanusa.com/downloads/1/dvm850blgbnlfresdpl.pdf|Velleman DVM850BL Multimeter]
+#[http://www.pic16.com/soft/LC100A_Users.pdf|PIC16 LC100-A L/C Meter]
+#Wanted: {FILE(type="gallery" fileId="14")}Boonton 9200B RF Millivoltmeter{FILE}
+##{FILE(type="gallery" fileId="14")}Boonton 952009 50Ω 100kHz - 2.5GHz Voltage Sensor{FILE}
+##{FILE(type="gallery" fileId="14")}Boonton 26A RF Millivoltmeter Calibrator{FILE}
+Power Meters:
+#{FILE(type="gallery" fileId="10")}Boonton 4200 RF Power Meter{FILE}
+##{FILE(type="gallery" fileId="10")}Boonton 4E -60dBm to -20dBm Power Sensor{FILE}
+##{FILE(type="gallery" fileId="10")}Boonton 8E -20dBm to +20dBm Power Sensor{FILE}
+##{FILE(type="gallery" fileId="10")}Boonton 25A Power Meter AC Calibrator{FILE}
+##{FILE(type="gallery" fileId="9")}Boonton 2500 DC Range Calibrator{FILE}
+#[http://www.p3international.com/manuals/p4400_manual.pdf|Kill-A-Watt P4400 AC Power / Voltage / Current Meter]
+Microwave Interconnects:
+#[http://www.nardamicrowave.com/east/index.php?m=Products&e=getPdf&id=3480|Narda 3004-10 Directional Coupler]
+#[http://www.nardamicrowave.com/east/index.php?m=Products&e=getPdf&id=3480|Narda 3004-20 Directional Coupler]
+#Narda 3044-10 Directional Coupler
+#[http://www.e-meca.com/rf-termination/specs_termination.php?ID=8&SpecsID=14|Meca 401-1F3 2W 3GHz N(M) Terminators] (2)
+#[http://www.mini-circuits.com/pdfs/ZN2PD-9G+.pdf|Mini-Circuits ZN2PD-9G-S 1.7 to 9 GHz SMA Power Splitter]
+#[http://www.minicircuits.com/pdfs/NM-SF50+.pdf|Mini-Circuits NM-SF50+ N(M) to SMA(F) Adapters] (5)
+#{FILE(type="gallery" fileId="24")}Weinschel M1450 DC-18GHz Short Circuit Termination{FILE}
+Automation:
+#[http://www.ni.com/pdf/products/us/4gpib677-680.pdf|NI GPIB-ENET/100 GPIB-Ethernet Interface]
+#Various GPIB Cables
+Soldering:
+#[http://www.apexhandtools.com/brands/CF_Files/model_detail.cfm?upc=037103191328|Weller WESD51 Soldering Station]
+#[http://www.radioshack.com/product/index.jsp?productId=2062731|Radio Shack 64-2060 45W Desoldering Iron]
+Networking:
+#[http://www.cisco.com/en/US/prod/collateral/routers/ps259/product_data_sheet0900aecd800fa5be.html|Cisco 2650 Router]
+#[http://routerboard.com/RBMetal5SHPn|RouterBOARD Metal 5SHPn Radio Modem / Router] (4)
+#[http://www.dlink.com/us/en/business-solutions/switching/smart-switches/easysmart/dgs-1100-08--8-port-gigabit-easysmart-switch|D-Link DGS-1100-8 Gigabit Ethernet Switch]
+Antennas:
+#[http://www.lairdtech.com/WorkArea/DownloadAsset.aspx?id=2166|Laird GD5W-21P 5GHz Wideband 21dBi Grid Antenna] (2)
+#[http://www.lairdtech.com/WorkArea/DownloadAsset.aspx?id=2166|Laird GD5W-28P 5GHz Wideband 28dBi Grid Antenna] (2)
+#[http://www.antennas.com/wp-content/uploads/2012/06/ARC-VS5818SD1_DS_061312.pdf|ARC Wireless ARC-VS5818SD1 5GHz 16dBi 120deg Sector Antenna]
+#[http://www.lairdtech.com/WorkArea/DownloadAsset.aspx?id=2162|Laird SAH58-120-16-WB 5GHz 16dBi  120deg Sector Antenna]
+Power Distribution Units:
+#[http://www.apc.com/resource/include/techspec_index.cfm?base_sku=AP7900|APC AP7900 120VAC/15A 8-port Switched]
+#[http://www.homedepot.com/h_d1/N-5yc1v/R-202295628/h_d2/ProductDisplay?catalogId=10053|Generic 3-way Outlet Adapter] (8)
+

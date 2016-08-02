@@ -1,0 +1,12 @@
+!9HPn Components
+#[http://cdn.macom.com/datasheets/DS-MAMX-007238-CM25MH_V6.pdf] AR9283 2.4GHz TRX feeds this mixer
+#[https://www.anaren.com/sites/default/files/X3C09P1-03S_Datasheet_RevB.pdf] used for splitter/combiner into 2 parallel amps
+#[http://www.vectron.com/products/saw/pdf_saw/TFS915A.pdf] <-- main RF port filter
+#[http://www.cel.com/pdf/datasheets/upg2009tb.pdf] <-- final RF switch, with cheap prices: [http://www.aliexpress.com/item/UPG2009TB-E3-UPG2009TB-SOT363-G2U-RF-Switches/954776235.html]
+#[http://www.cel.com/pdf/datasheets/upg2163t5n.pdf] <- RX-side mixer switch near the AR9283
+#[http://www.cel.com/pdf/datasheets/upc8172tb.pdf] <-- RX side up-converter
+#Si4113-D-GM PLL [https://www.silabs.com/Support%20Documents/TechnicalDocs/si4133.pdf] LO freq = 1.545GHz
+#RX-side switch, right next to the AR9283 [http://www.cel.com/pdf/datasheets/upg2163t5n.pdf]
+#SKY65111-348LF RF amplifiers: [http://www.skyworksinc.com/uploads/documents/200428E.pdf]
+If the interface is disabled, it doesn't do RX mixing, you gotta put it at least into scan mode.  LO freq stays fixed.  RX of 929.7MHz gets up-converted via 1.545GHz LO to 2.4747GHz.
+

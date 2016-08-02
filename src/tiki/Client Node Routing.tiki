@@ -1,0 +1,8 @@
+#DD-WRT / OpenWRT on a typical router with an interface dedicated to HamWAN and RIP or BGP announcements of subnets which are available via HamWAN.
+#Routing and uplink devices are co-managed by HamWAN operators
+#Can also replace typical Linksys/D-Link router with a RouterBoard router [http://routerboard.com/RB2011UiAS-2HnD-IN|such as this].
+
+{SVG(scale="70" src="tiki-download_wiki_attachment.php?attId=96")}{SVG}
+...page...
+{SVG(scale="90" src="tiki-download_wiki_attachment.php?attId=97")}{SVG}
+

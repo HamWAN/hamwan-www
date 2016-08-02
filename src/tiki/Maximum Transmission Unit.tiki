@@ -1,0 +1,35 @@
+{maketoc}
+!!!Introduction
+Fragmentation is expensive on router CPUs.  We'd like to avoid doing it inside the HamWAN network.  Unfortunately, at least some of our uplink nodes employ IPsec tunnels on 1500-byte MTU-constrained networks to move data between the microwave and Internet domains.  This means they cannot move a whole 1500-byte user frame because it would leave no room for all the IPsec information.  The worst case MTU that is globally supported in the network is 1418 bytes.  This arises from using IPsec(ESP+NAT-T) headers.
+
+!!!Respecting MTU on Transmit
+A typical client node modem holds an IPsec(AH) tunnel with a cell site.  The MTU of this tunnel is configured to be 1418 bytes.  Any packets being routed over this tunnel which exceed the 1418 byte size will be fragmented by the user's modem, unless they have the Don't Fragment (DF) flag set.  Since the fragmentation happens on the user's modem, the rest of the HamWAN network does not pay the CPU penalty for this.  If the DF flag is set, the user's modem will generate an Internet Control Message Protocol (ICMP) response to the sending host to let it know the packet could not be routed.  The sending host can either give up or lower the packet size and try again.
+
+That's a lot of back and forth delay with the ICMP method, so it's better to just configure the sending host to have an MTU of 1418.
+
+!!!Respecting MTU on Receive
+Controlling the size of packets others send back to you via HamWAN is a bit tougher.  For TCP, there exists something called a Maximum Segment Size (MSS) which your host sends to a remote host in the SYN packet.  This tells the remote host the MSS (in bytes) that you are willing to accept.  Likewise, the remote host sends you their MSS, and you use the lower of their MSS or your MTU when genering packets out to them.  For any hosts which do communication via HamWAN, their MSS should be set to 1378.
+
+There exists a method to enforce this MSS right in the client node router itself so no host configs need to be changed.
+{CODE(caption="Enforce MSS at the client node router" colors=none)}
+/ip firewall mangle
+add action=change-mss chain=forward new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+{CODE}
+The above will make the router listen to all SYN packets, and it'll edit them in-flight to change their MSS.  This of course violates IPsec(AH), so if your host is relying on that, you've gotta do the MSS setting directly on the host and not rely on in-flight modifications.
+
+Sometimes, HamWAN routers themselves need to communicate to the outside world and they originate TCP sessions.  To let them communicate their MSS needs to the outside world, the following firewall rule is used:
+{CODE(caption="Set MSS for router-originated TCP connections" colors=none)}
+/ip firewall mangle
+add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+{CODE}
+This does NOT violate any IPsec integrity rules, since it is applied before the packets hit IPsec for initial signing.
+
+All of the above is fine for TCP, but other protocols are not so lucky on the receive side.  If a large packet comes into the network with a size > 1418, the edge routers will take the CPU hit and fragment it.  This is one of the reasons the edge routers need to be beefy machines.
+
+!!!Summary
+#Client node routers hold tunnels which have a 1418 MTU and will fragment outbound traffic using the client node's CPU
+#Configure any hosts which are to communicate via HamWAN with an MTU of 1418 and set their TCP MSS to 1378 to avoid fragmentation
+#For non-IPsec(AH) traffic, it's also OK to use the firewall forward mangle rule on the client node router to set the MSS
+#For all routers in the HamWAN network, apply the firewall output mangle rule
+#Edge routers will do fragmentation of incoming large packets, although this is costly for the network to do, so try to avoid it
+

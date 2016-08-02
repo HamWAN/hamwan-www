@@ -1,0 +1,666 @@
+{maketoc}
+!!!Participation in OSPF
+#{CODE(colors=none caption="Install Quagga")}
+sudo apt-get install quagga
+{CODE}
+#Edit /etc/quagga/daemons and enable zebra and ospfd, optionally enable and configure ospf6d if your network has IPv6 connectivity
+#{CODE(caption="Create configuration files" colors="none")}
+sudo touch /etc/quagga/zebra.conf /etc/quagga/ospfd.conf /var/log/quagga/zebra.log /var/log/quagga/ospfd.log
+sudo chown quagga:quagga /etc/quagga/{zebra,ospfd}.conf
+sudo chown quagga:quagga /var/log/quagga/{zebra,ospfd}.log
+sudo chmod o-r /etc/quagga/{zebra,ospfd}.conf
+sudo chmod o-r /var/log/quagga/{zebra,ospfd}.log
+{CODE}
+#{CODE(colors=none caption="Populate the config files")}
+sudo cat > /etc/quagga/daemons
+zebra=yes
+bgpd=no
+ospfd=yes
+ospf6d=yes
+ripd=no
+ripngd=no
+isisd=no
+babeld=no
+<CTRL-D>
+
+sudo cat > /etc/quagga/zebra.conf
+password <CONNECT PASSWORD>
+enable password <ENABLE PASSWORD>
+log file /var/log/quagga/zebra.log
+<CTRL-D>
+
+sudo cat > /etc/quagga/ospfd.conf
+password <CONNECT PASSWORD>
+enable password <ENABLE PASSWORD>
+log file /var/log/quagga/ospfd.conf
+
+interface eth0
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 <OSPF PASSWORD>
+ ip ospf priority 10
+
+router ospf
+ ospf router-id <PRIMARY SERVER IP>
+ redistribute connected
+ network <LAN NETWORK ADDRESS/BITMASK> area 0.0.0.0
+network <ANYCAST NETWORK/BITMASK> area 0.0.0.0
+ area 0 authentication message-digest
+<CTRL-D>
+
+sudo cat > /etc/quagga/ospf6d.conf
+password <CONNECT PASSWORD>
+enable password <ENABLE PASSWORD>
+log file /var/log/quagga/ospf6d.log
+
+interface eth0
+ ipv6 ospf6 priority 10
+
+interface lo
+
+router ospf6
+ router-id <PRIMARY IPv4 SERVER IP>
+ redistribute connected
+ interface eth0 area 0.0.0.0
+ interface lo area 0.0.0.0
+ area 0.0.0.0 range <IPv6 ANYCAST SUBNET 1>
+ area 0.0.0.0 range <IPv6 ANYCAST SUBNET 2>
+<CTRL-D>
+{CODE}
+(Note that for Ubuntu you'll instead need to manually edit the files rather than using cat > syntax)
+(Note that in this case, the <CONNECT PASSWORD>, <ENABLE PASSWORD>, and  <OSPF PASSWORD> are the same; they correspond with what Mikrotik calls the OSPF Interface's Authentication Key)
+(Your anycast network's bitmask is almost certainly 23)
+#{CODE(colors=none caption="Start Quagga")}
+sudo service quagga start
+{CODE}
+#{CODE(colors=none caption="Verify OSPF is working")}
+ip r | wc -l # Should show a large number of routes, > 300 at present.
+{CODE}
+#{CODE(colors=none caption="Remove previous static default route")}
+sudo ip r | grep default # If it contains the word "zebra", do not remove it
+sudo ip r del default # Be sure you have OOB control first since this can disconnect you
+sudo ip r | grep default # Should now have a default route from zebra
+sudo vim /etc/network/interfaces # Remove any gateway statement if this was a static config
+{CODE}
+#{CODE(colors=none caption="OPTIONAL: Verify everything will work from a cold boot")}
+ifdown eth0 ; ifup eth0 # Be sure you have OOB control first since this can disconnect you
+{CODE}
+#{CODE(colors=none caption="OPTIONAL: Verify you can control zebra + ospfd")}
+telnet localhost 2601 # For zebra
+telnet localhost 2604 # For ospfd
+telnet ::1 2606 # For ospf6d
+{CODE}
+
+!!!Recursive DNS Anycast Service
+#{CODE(colors=none caption="Install unbound")}
+sudo apt-get install unbound
+{CODE}
+#{CODE(colors=none caption="Stop and disable unbound")}
+sudo service unbound stop
+sudo update-rc.d unbound disable
+{CODE}
+#{CODE(colors=none caption="Configure unbound")}
+sudo cat >> /etc/unbound/unbound.conf
+    interface: <ANYCAST IP 1>
+    interface: <ANYCAST IP 2>
+    do-ip6: yes
+    interface: <IPv6 ANYCAST IP 1>
+    interface: <IPv6 ANYCAST IP 2>
+    access-control: 44.0.0.0/8 allow
+    access-control: <IPv6 ALLOCATION> allow
+    outgoing-interface: <PRIMARY SERVER IP>
+    rrset-roundrobin: yes
+<CTRL-D>
+{CODE}
+#{CODE(colors=none caption="Configure recursive DNS IPv4 anycast interface")}
+sudo cat >> /etc/network/interfaces
+auto any-dns-rr
+iface any-dns-rr inet manual
+        pre-up ip tuntap add dev any-dns-rr mode tap
+        post-up ip a add <ANYCAST IP 1>/32 dev any-dns-rr
+        post-up ip a add <ANYCAST IP 2>/32 dev any-dns-rr
+        post-up ip l set dev any-dns-rr up
+        post-up service unbound start
+        post-down service unbound stop
+        post-down ip tuntap del dev any-dns-rr mode tap
+<CTRL-D>
+{CODE}
+#{CODE(colors=none caption="OPTIONALLY: Configure recursive DNS IPv6 anycast interface")}
+auto lo
+iface lo inet loopback
+\t\tpost-up ip -6 a add <IPv6 ANYCAST IP 1>/128 dev lo
+\t\tpost-up ip -6 a add <IPv6 ANYCAST IP 2>/128 dev lo
+{CODE}
+#{CODE(colors=none caption="Start the recursive DNS resolver service")}
+sudo ifup lo
+sudo ifup any-dns-rr
+{CODE}
+#{CODE(colors=none caption="Verify functionality")}
+ip a # Should see the any-dns-rr interface with the two anycast IPs as well as the IPv6 IPs on the lo interface
+dig @<ANYCAST IP 1> google.com. A # Should return google's IPs
+dig @<IPv6 ANYCAST IP 1> google.com. A # Should return google's IPs
+{CODE}
+#{CODE(colors=none caption="Verify the service is being advertised to OSPF")}
+ssh <NEAREST OSPF ROUTER>
+/ip route check <ANYCAST IP 1> # Should display nearest server's primary IP as nexthop
+/ipv6 route check <IPv6 ANYCAST IP 1> # Should display Link Local address of nearest server's ethernet interface as nexthop
+{CODE}
+!!!Authoritative DNS Anycast Service
+__THIS NEEDS TO BE VERIFIED STILL__
+Authoritative DNS is used to place names for the hostnames and the necessary PTR records for reverse-dns. It is comprised of a PowerDNS install utilizing PostgreSQL. You will amostly certainly want to install the HamWAN Management Portal alongside this.
+NOTE TO SELF: Evaluate Knot DNS an alternative to PowerDNS.
+#{CODE(colors=none caption="Install necessary software")}
+sudo apt-get install postgresql postgresql-contrib postgresql-client pdns-server pdns-backend-pgsql
+{CODE}
+#{CODE(colors=none caption="Setup the anycast IPs")}
+sudo cat >> /etc/network/interfaces
+auto any-adns
+iface any-adns inet manual
+        pre-up ip tuntap add dev any-adns mode tap
+        pre-up ip l set dev any-adns mtu 1418
+        post-up ip a add <ANYCAST IP 1>/32 dev any-adns
+        post-up ip a add <ANYCAST IP 2>/32 dev any-adns
+        post-up ip l set dev any-adns up
+        post-up service pdns restart
+        post-down ip tuntap del dev any-adns mode tap
+<CTRL-D>
+{CODE}
+#{CODE(caption="Make sure postgres can handle our connection properly" colors="none")}
+sudo vi /etc/postgresql/9.3/main/pg_hba.conf
+#in this file, make sure that the following line is present (most likely you'll change auth from "peer" to "md5")
+local   all             all                                     md5
+{CODE}
+#{CODE(caption="Update the pdns config to point to the postgres db; make sure the following are set in /etc/powerdns/pdns.d/pdns.local.gpgsql" colors="none")}
+launch=gpgsql
+gpgsql-host=
+gpgsql-port=
+gpgsql-user=powerdns
+gpgsql-password=<DB PW>
+gpgsql-dbname=powerdns
+local-address=<YOUR ANYCAST AUTHORITATIVE NS IPS SEPARATED BY COMMA>
+#make sure there aren't any include-dir statements!!{CODE}
+#{CODE(colors=none caption="Setup the DB")}
+sudo su postgres ; change to the postgres user
+psql ; enter the postgres prompt
+CREATE USER powerdns WITH PASSWORD '<DB PW>'
+CREATE DATABASE powerdns
+\\q
+{CODE}
+#{CODE(caption="Create the PDNS DB Scema" colors="none")}
+psql -d powerdns
+
+CREATE TABLE domains (
+  id                    SERIAL PRIMARY KEY,
+  name                  VARCHAR(255) NOT NULL,
+  master                VARCHAR(128) DEFAULT NULL,
+  last_check            INT DEFAULT NULL,
+  type                  VARCHAR(6) NOT NULL,
+  notified_serial       INT DEFAULT NULL,
+  account               VARCHAR(40) DEFAULT NULL,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+CREATE UNIQUE INDEX name_index ON domains(name);
+
+
+CREATE TABLE records (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT DEFAULT NULL,
+  name                  VARCHAR(255) DEFAULT NULL,
+  type                  VARCHAR(10) DEFAULT NULL,
+  content               VARCHAR(65535) DEFAULT NULL,
+  ttl                   INT DEFAULT NULL,
+  prio                  INT DEFAULT NULL,
+  change_date           INT DEFAULT NULL,
+  disabled              BOOL DEFAULT 'f',
+  ordername             VARCHAR(255),
+  auth                  BOOL DEFAULT 't',
+  CONSTRAINT domain_exists
+  FOREIGN KEY(domain_id) REFERENCES domains(id)
+  ON DELETE CASCADE,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE INDEX rec_name_index ON records(name);
+CREATE INDEX nametype_index ON records(name,type);
+CREATE INDEX domain_id ON records(domain_id);
+CREATE INDEX recordorder ON records (domain_id, ordername text_pattern_ops);
+
+
+CREATE TABLE supermasters (
+  ip                    INET NOT NULL,
+  nameserver            VARCHAR(255) NOT NULL,
+  account               VARCHAR(40) DEFAULT NULL,
+  PRIMARY KEY(ip, nameserver)
+);
+
+
+CREATE TABLE comments (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT NOT NULL,
+  name                  VARCHAR(255) NOT NULL,
+  type                  VARCHAR(10) NOT NULL,
+  modified_at           INT NOT NULL,
+  account               VARCHAR(40) DEFAULT NULL,
+  comment               VARCHAR(65535) NOT NULL,
+  CONSTRAINT domain_exists
+  FOREIGN KEY(domain_id) REFERENCES domains(id)
+  ON DELETE CASCADE,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE INDEX comments_domain_id_idx ON comments (domain_id);
+CREATE INDEX comments_name_type_idx ON comments (name, type);
+CREATE INDEX comments_order_idx ON comments (domain_id, modified_at);
+
+
+CREATE TABLE domainmetadata (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT REFERENCES domains(id) ON DELETE CASCADE,
+  kind                  VARCHAR(32),
+  content               TEXT
+);
+
+CREATE INDEX domainidmetaindex ON domainmetadata(domain_id);
+
+
+CREATE TABLE cryptokeys (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT REFERENCES domains(id) ON DELETE CASCADE,
+  flags                 INT NOT NULL,
+  active                BOOL,
+  content               TEXT
+);
+
+CREATE INDEX domainidindex ON cryptokeys(domain_id);
+
+
+CREATE TABLE tsigkeys (
+  id                    SERIAL PRIMARY KEY,
+  name                  VARCHAR(255),
+  algorithm             VARCHAR(50),
+  secret                VARCHAR(255),
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE UNIQUE INDEX namealgoindex ON tsigkeys(name, algorithm);
+GRANT SELECT ON supermasters TO powerdns;
+GRANT ALL ON tsigkeys TO powerdns;
+GRANT ALL ON cryptokeys TO powerdns;
+GRANT ALL ON domainmetadata TO powerdns;
+GRANT ALL ON comments TO powerdns;
+GRANT ALL ON records TO powerdns;
+GRANT ALL ON domains TO powerdns;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO powerdns;
+\\q{CODE}
+#{CODE(caption="Restart the deamons" colors="none")}
+exit; go back to your normal user
+sudo service postgresql restart
+sudo ifup any-adns
+{CODE}
+#{CODE(caption="Test it!" colors="none")}
+sudo service pdns stop #stop the service for testing
+sudo /etc/init.d/pdns monitor # you shouldn't see any errors during the startup;
+#go back to normal
+sudo service pdns start
+{CODE}
+!!!HamWAN Portal
+__THIS NEEDS TO BE VERIFIED STILL__
+
+#{CODE(caption="Install" colors="none")}sudo apt-get update #make sure we're up to date
+sudo apt-get install nginx python-pip python-virtualenv python-dev git-core libpq-dev postgresql postfix #install the webserver, python, and the python libs we need
+sudo pip install uwsgi #install via pip instead of apt-get to get the latest
+sudo adduser portal #we use this user to run uwsgi server; use a good password!!
+#time to download our custom stuff
+sudo mkdir /var/www
+cd /var/www
+sudo git clone https://github.com/HamWAN/hamwan-portal.git
+sudo git clone https://github.com/HamWAN/django-ssl-client-auth.git
+sudo chown portal:portal -R hamwan-portal django-ssl-client-auth
+
+sudo -s -u portal
+cd hamwan-portal
+ln -s /var/www/django-ssl-client-auth/django_ssl_auth . #make a symlink for the ssl auth stuff
+virtualenv env #setup our virtual environment
+source env/bin/activate
+#We should now be in the virtual environment
+pip install django south psycopg2 django-debug-toolbar ipaddr #install our dependencies
+exit #Done with this part! on to the database
+sudo -i -u postgres
+createuser portal
+psql
+ALTER USER portal PASSWORD '<your-portal-user-pw-here>';
+\\q
+createdb portal
+psql -d portal
+CREATE OR REPLACE FUNCTION array_reverse(anyarray) RETURNS anyarray AS $$
+SELECT ARRAY(
+    SELECT $1[i]
+    FROM generate_subscripts($1,1) AS s(i)
+    ORDER BY i DESC
+);
+$$ LANGUAGE 'sql' STRICT IMMUTABLE;
+\\q
+exit
+#Now we need to configure settings.py to point to our database
+sudo -s -u portal
+cd hamwan-portal
+source env/bin/activate #get back in our virtual environment
+#Now we need to edit our hamwanadmin/settings.py file; this is a bit complicated, but use the following as a template:
+
+# Django settings for hamwanadmin project.
+
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    ('Ryan Turner', 'rturner@memhamwan.org'),
+)
+
+MANAGERS = ADMINS
+
+SERVER_EMAIL = 'server@memhamwan.net'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'portal',                      # Or path to database file if using sqlite3.
+        # The following settings are not used with sqlite3:
+        'USER': 'portal',
+        'PASSWORD': '<YOUR-PORTAL-DB-USER-PW-HERE>',                  # Using uid auth, you won't need a password
+        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',                      # Set to empty string for default.
+    },
+    'pdns': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'powerdns',                      # Or path to database file if using sqlite3.
+        'USER': 'powerdns',
+        'PASSWORD': '<YOUR-PDNS-DB-USER-PW-HERE>',
+        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',                      # Set to empty string for default.
+    },
+}
+
+DATABASE_ROUTERS = ['hamwanadmin.dbrouter.DnsRouter', ]
+
+# Hosts/domain names that are valid for this site; required if DEBUG is False
+# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = ['portal.memhamwan.org', 'encrypted.memhamwan.org', 
+                 'portal.memhamwan.net', 'encrypted.memhamwan.net',
+                 '<your-server-ip-here-if-you-want>',]
+
+# Local time zone for this installation. Choices can be found here:
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# although not all choices may be available on all operating systems.
+# In a Windows environment this must be set to your system time zone.
+TIME_ZONE = 'America/Chicago'
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'en-us'
+
+SITE_ID = 1     # From the Django sites app
+
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery.
+USE_I18N = True
+
+# If you set this to False, Django will not format dates, numbers and
+# calendars according to the current locale.
+USE_L10N = True
+
+# If you set this to False, Django will not use timezone-aware datetimes.
+USE_TZ = True
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/var/www/example.com/media/"
+MEDIA_ROOT = ''
+
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash.
+# Examples: "http://example.com/media/", "http://media.example.com/"
+MEDIA_URL = ''
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/var/www/example.com/static/"
+STATIC_ROOT = '/var/www/hamwan-portal/hamwanadmin/static/'
+
+# URL prefix for static files.
+# Example: "http://example.com/static/", "http://static.example.com/"
+STATIC_URL = '/static/'
+
+# Additional locations of static files
+STATICFILES_DIRS = (
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    "/var/www/hamwan-portal/hamwanadmin/css",
+)
+
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = '<YOUR-SECRET-KEY-HERE>'
+
+# List of callables that know how to import templates from various sources.
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
+)
+
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
+TEMPLATE_CONTEXT_PROCESSORS = TCP + (
+    'django.core.context_processors.request',
+    'portal.context_processors.encrypted44',
+)
+
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
+    'django_ssl_auth.SSLClientAuthMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # Uncomment the next line for simple clickjacking protection:
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+# AUTHENTICATION_BACKENDS = (
+#     'django.contrib.auth.backends.RemoteUserBackend',
+# )
+
+ROOT_URLCONF = 'hamwanadmin.urls'
+
+# Python dotted path to the WSGI application used by Django's runserver.
+WSGI_APPLICATION = 'hamwanadmin.wsgi.application'
+
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    '/var/www/hamwan-portal/templates',
+)
+
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.admin',
+    'django.contrib.flatpages',
+    'django_ssl_auth',
+    'configuration',
+    'dns',
+    'portal',
+    # 'map',
+    'south',
+    'utils',
+    'debug_toolbar',
+    # Uncomment the next line to enable admin documentation:
+    # 'django.contrib.admindocs',
+)
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+
+AUTHENTICATION_BACKENDS = (
+    'django_ssl_auth.SSLClientAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+USER_DATA_FN = 'django_ssl_auth.lotw.user_dict_from_dn'
+AUTOCREATE_VALID_SSL_USERS = True
+LOGIN_REDIRECT_URL = "/"
+
+# Deprecated:
+AMPR_DNS_FROM = "bot@portal.hamwan.net"
+# AMPR_DNS_TO = "ampraddr@hamradio.ucsd.edu"
+AMPR_DNS_TO = "nobody@gmail.com"
+# AMPR_DNS_TO = "esarfl@gmail.com"
+AMPR_DNS_QUEUE = '/var/www/hamwan-portal/hamwanadmin/amprdnsqueue'
+
+
+
+
+
+
+
+
+
+
+
+
+
+./manage.py syncdb #time to sync our db with it
+#It'll prompt you to make a super user, do it! Use the same email as you put in the config file for your admin user
+
+./manage.py migrate # this creates the schemas
+./manage.py runserver 0.0.0.0:8000 #Test it out! Open your ip:8000 to verify that the install worked. If so, let's move on to setting up uwsgi and nginx
+
+#manually change portal_ipaddress.ip to type "inet"
+sudo su postgres
+psql -d portal
+ALTER TABLE portal_ipaddress ALTER COLUMN ip TYPE inet USING(ip::inet);
+\\q
+exit
+
+sudo mkdir /etc/nginx/ssl
+sudo openssl req -new -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/hamwanadmin.key -out /etc/nginx/ssl/hamwanadmin.csr #Generate a CSR for your https
+# Fill in the details!
+sudo view /etc/nginx/ssl/hamwanadmin.csr # Submit your CSR to get the cert signed for web ssl; startssl is free!
+sudo vi /etc/nginx/ssl/hamwanadmin.crt #Put your signed certificate (which you probably got from startssl) in here
+
+sudo vi /etc/nginx/nginx.conf #You'll almost certainly need to uncomment the following line:
+ server_names_hash_bucket_size 64;
+ wq! to save
+
+#Now to move the uwsgi/nginx configs in place
+sudo cp ./deploy/uwsgi.conf /etc/init/
+sudo mkdir -p /var/log/uwsgi
+sudo touch /var/log/uwsgi/portal.log
+sudo chown portal:portal /var/log/uwsgi/portal.log
+sudo service uwsgi start
+sudo cp ./deploy/portal_nginx.conf /etc/nginx/sites-available/portal.conf
+sudo ln -s /etc/nginx/sites-available/portal.conf /etc/nginx/sites-enabled/
+sudo service nginx restart{CODE}
+!!!NTP Anycast Service
+#{CODE(colors=none caption="Install ntp")}
+sudo apt-get install ntp
+{CODE}
+#{CODE(colors=none caption="Configure ntp")}
+sudo cat >> /etc/ntp.conf
+driftfile /var/lib/ntp/ntp.drift
+
+statistics loopstats peerstats clockstats
+filegen loopstats file loopstats type day enable
+filegen peerstats file peerstats type day enable
+filegen clockstats file clockstats type day enable
+
+server 44.24.255.3 iburst prefer
+
+server 0.us.pool.ntp.org
+server 1.us.pool.ntp.org
+server 2.us.pool.ntp.org
+server 3.us.pool.ntp.org
+
+restrict -4 default kod notrap nomodify nopeer noquery
+restrict -6 default kod notrap nomodify nopeer noquery
+
+restrict 127.0.0.1
+restrict ::1
+<CTRL-D>
+{CODE}
+#{CODE(colors=none caption="Configure NTP anycast interface")}
+sudo cat >> /etc/network/interfaces
+auto any-ntp
+iface any-ntp inet manual
+        pre-up ip tuntap add dev any-ntp mode tap
+        pre-up ip l set dev any-ntp mtu 1418
+        post-up ip a add <ANYCAST IP 1>/32 dev any-ntp
+        post-up ip a add <ANYCAST IP 2>/32 dev any-ntp
+        post-up ip l set dev any-ntp up
+        post-up service ntp restart
+        post-down ip tuntap del dev any-ntp mode tap
+<CTRL-D>
+
+auto lo
+iface lo inet loopback
+\t\tpost-up ip -6 a add <IPv6 ANYCAST IP 1>/128 dev lo
+\t\tpost-up ip -6 a add <IPv6 ANYCAST IP 2>/128 dev lo
+{CODE}
+#{CODE(colors=none caption="Start the NTP anycast service")}
+sudo ifup lo
+sudo ifup any-ntp
+{CODE}
+#{CODE(colors=none caption="Verify functionality")}
+ip a # Should see the any-ntp interface with the two anycast IPs
+ntpdate -d <ANYCAST IP 1> # Should see the current ntp date information
+ntpdate -d <IPv6 ANYCAST IP 1> # Same as IPv4
+{CODE}
+#{CODE(colors=none caption="Verify the service is being advertised to OSPF")}
+ssh <NEAREST OSPF ROUTER>
+/ip route check <ANYCAST IP 1> # Should display nearest server's primary IP as nexthop
+/ipv6 route check <IPv6 ANYCAST IP 1> # Should display Link Local address of local server's ethernet interface
+{CODE}
+

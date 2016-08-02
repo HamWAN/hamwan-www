@@ -1,0 +1,24 @@
+!Potential Sites
+{toc order=asc }
+
+!Tools To Find Future Sites
+Seek out and evaluate new sites for network nodes.  Take into account coverage mapping, costs involved, special restrictions, sustainability, ham population density, etc.
+
+Useful links:
+[http://www.usnaviguide.com/|Map of zip codes]
+[http://www.vanityhq.com/|N4MC's Ham Locator]
+[http://lookup.logbook.am/ham-creeper|Ham Creeper]
+[http://www.interceptradio.com/files/US/WA/radiomap.gif|Puget Sound repeater sites]
+
+Use these two together to identify hams which are high up enough to be useful to the project.  Perhaps they'd be willing to host nodes for free?
+
+[https://github.com/ninuxorg/nodeshot|Nodeshot: A good node mapping tool, overlay for google maps]
+
+[http://www.barnabu.co.uk/geapi/polyplot/|PolyPlot: A Google Earth extension that allows for drawing of circles and other shapes]
+
+[http://www.fccinfo.com/fccinfo_google_earth.php|Google Earth plugin for FCC tower database]
+
+!!!Finding Mountain Top Sites
+#[http://www.n7cfo.com/vhf/locations.htm]
+#[http://caltopo.com/map?id=5C7I]
+

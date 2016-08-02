@@ -1,0 +1,36 @@
+!!!Home Recommendation:
+Poynting K-GRID-003-06
+
+!!!Mountain-top Recommendation:
+ARC 2 ft solid dish ARC-DA5830SD1 plus radome
+
+!!!Suppliers
+||Type|Supplier|Cost|Notes|
+GD5W-28P|[http://streakwave.com/itemdesc.asp?ic=GD5W-28P&eq=&Tp=|streakwave.com]|$73.47|Need more than one supplier|
+Rocket Dish 5G30|[http://www.wlanparts.com/product/RD5G30/Ubiquiti-RocketDish-5G-30-5GHz-AirMax-2x2-PtP-Dish-Antenna.html|WlanParts.com]|$147.00| 2 ft solid dish
+Rocket Dish 5G30-LW|[https://www.ubnt.com/airmax/rocketdish-lw/|ubnt.com]|$94.50| New, untested
+ARC ARC-DA5830SD1|[http://www.titanwirelessonline.com/ARC-4-9-5-8GHz-30db-DualPOL-Dish-p/at-da5830sd1-arc.htm|titanwirelessonline.com]|$119.00| 5G30 clone, cheaper
+ARC ARC-DA5834SD1|[http://www.streakwave.com/itemdesc.asp?ic=ARC-DA5834SD1&eq=&Tp=|streakwave.com]|$220.90| 3 ft solid dish. Freight on these is cost-prohibitive.
+Poynting K-GRID-003-06|[http://www.titanwirelessonline.com/Poynting-5-8GHz-31dBi-Grid-p/at-30gr-58.htm|titanwirelessonline.com]|$81.00|
+Poynting K-GRID-003-06|[http://www.ispsupplies.com/categories/5GHz-Grid-Antennas/K-GRID-003-06.html|ispsupplies.com]|$81.50| ||
+
+!!!Alternatives
+#GD5W-28P - 28dBi 4.9-5.8GHz Wideband Parabolic Grid ||__Pro__|__Con__|
+Allows for frequency agility|More spectrum than ever required|
+Low wind loading| |
+Low cost| ||
+#RocketDish 5G-30 - 30dBi 4.9-5.9GHz Dual Polarity Dish ||__Pro__|__Con__|
+Can support future MIMO links|Twice the price of 28dBi grid dish|
+Better vswr than ARC - max 1.4| |
+5deg beamwidth| |
+Radome avail for another $59.00| ||
+#ARC ARC-DA5834SD1 - 34dBi 4.94-5.875GHz Dual Polarity Dish ||__Pro__|__Con__|
+Can support future MIMO links|Thrice the cost of the 28dBi grid dish|
+Improves link budget by 12dB if used on both ends of long / difficult links| |
+Same 4deg beamwidth as 28dBi dish: should be just as difficult to align| |
+More rugged, should survive and stay aligned longer|Higher wind load|
+Radome avail for another $65.58| ||
+
+
+
+

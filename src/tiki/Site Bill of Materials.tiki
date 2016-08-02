@@ -1,0 +1,70 @@
+Every site is different, but this list should give you a basic idea how HamWAN sites are engineered and the hardware investment required.
+
+{maketoc}
+
+!Bill of Materials
+!!2nd Generation (current)
+The second generation HamWAN site uses MIMO sectors and PtP links.
+
+||__Three Sectors__
+Quantity|Model|Description
+3|((Ubiquiti 5G-19-120))|Sector antenna, 120 degree, 19 dBi, horizontal and vertical polarization
+3|((WaveGuard AM5G19))|RF shielding for sector antenna
+3|((Radio Modem|MikroTik RouterBOARD RB912UAG-5HPnD))|5 GHz MIMO modem
+3|((RF Elements SBX-S-CC-2SMA))|shielded outdoor radio enclosure
+__Uplink/PtPs__
+Quantity|Model|Description
+1+|[http://routerboard.com/RB921UAGS-5SHPacD-NM|MikroTik NetMetal RB921UAGS-5SHPacD-NM]|5 GHz AC MIMO modem
+1+|((ARC ARC-DA5830SD1))|Uplink dish, 2ft, 30 dBi
+1+|((RF Armor UDR235))|Shielded radome for uplink dish
+__Indoors__
+Quantity|Model|Description
+1|((Ethernet Switch - 8 port|RB2011UAS-RM))|8-port rack mount router/switch
+1|((Switched PDU|APC AP7900))|Switched power distribution unit
+5+|[http://www.lowes.com/pd/Project-Source-15-Amp-3-Wire-Grounding-Single-to-Triple-Orange-Basic-Adapter/3805421|Three-way AC splitter]|The orientation of the outlets on the AP7900 will not fit Mikrotik wall warts side-by-side. Use these splitters to fit them all. Only one outlet on each splitter is used, so the PDU still maps 1:1 to devices.
+__Other__
+Quantity|Model|Description
+500 ft|CAT5E|Outdoor shielded CAT5E, length depends on tower height (Ubiquiti TOUGHCable Pro recommended)
+30|Cable cushions/hangers|Fixes CAT5E to the tower
+4+|((Lightning Protector))|Optional, depending on the size of your balls
+8|RJ45 terminator|for shielded CAT5E (Ubiquiti TOUGHCable Connectors recommended)
+?|Hardware|Misc mounting hardware. Don't neglect this cost!||
+
+!!1st Generation
+||Quantity|Model|Description
+3|((Laird SAH58-120-16-WB))|Sector antenna, 120 degree, 14 dBi, horizontal polarization
+3|((Radio Modem|MikroTik RouterBOARD Metal 5SHPn))|5 GHz sector modem
+1+|((ARC ARC-DA5834SD1))|Uplink dish, 3ft, 34 dBi
+1+|Radome|For uplink dish
+1+|RB912UAG-5HPnD-OU|5 GHz MIMO uplink modem
+1|((Ethernet Switch - 8 port|RB2011UAS-RM))|8-port rack mount router/switch
+500 ft|CAT5E|Outdoor shielded CAT5E, length depends on tower height
+30|Cable cushions/hangers|Fixes CAT5E to the tower
+4+|((Lightning Protector))|Optional, depending on the size of your balls
+8|RJ45 terminator|for shielded CAT5E
+1|((Switched PDU|APC AP7900))|Switched power distribution unit
+?|Hardware|Misc mounting hardware. Don't neglect this cost!||
+
+!Background
+!!Sectors
+
+Each site consists of three 120 degree sectors. 1st generation sites use Metal 5SHPn modems, while newer sites use MIMO modems.
+
+!!Uplinks
+
+Each site should have at least one uplink to another site. Ideally, 2-3 uplinks will provide redundancy.
+
+There are many options for uplink antennas and radios. Solid dishes are available in 2 ft and 3 ft versions (or larger if you have the budget!). Shipping is cost prohibitive for 3 ft dishes, but necessary for long links. Radomes should be used with the solid dishes. A radome with built-in shielding, like the WaveGuard WG-2R, may help reduce local interference.
+
+Solid dishes are used where icing is expected. If there is no chance of icing, a grid antenna such as the ((Poynting K-GRID-003-06)) may work.
+
+One thing to consider with grid or solid dishes is shielding to avoid interference with the sectors and other dishes. Our second generation sites use shielding from RF Armor and Waveguard.
+
+Dual-polarity dishes provide the opportunity for MIMO when matched with an appropriate MIMO radio, such as the RB912UAG-5HPnD-OUT.
+
+!!Control
+
+A Mikrotik RouterBOARD RB2011UAS-RM is used as a network switch between the sectors and uplinks.
+
+A switched PDU like the APC AP7900 allows power to each of the modems to be controlled over the network.
+

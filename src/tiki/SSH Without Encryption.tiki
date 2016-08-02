@@ -1,0 +1,19 @@
+As of RouterOS v6.14, SSH with the None cipher is supported.  This was a feature Mikrotik implemented specifically because of HamWAN's request.
+
+The attached diff file can be applied against the specified version of OpenSSH so that an encryption-free ssh client (and server) can be built.
+
+{CODE(caption="Apply the patch" colors=none)}
+cd openssh-6.6p1
+patch -p1 < ../openssh-6.6p1-HamWAN.diff
+{CODE}
+
+Compile the rest of the package as usual, to your taste.  Be sure to set "NoneEnabled yes" in ssh_config and/or sshd_config files, depending on where you would like to support the none cipher (client and/or server).
+
+{CODE(caption="Use encryption-free SSH" colors=none)}
+# Do authentication using an encrypting cipher, and once authenticated, switch to the None cipher
+ssh -o NoneSwitch=yes host
+
+# Use the None cipher from the start, including during the authentication phase of SSH
+ssh -c none host
+{CODE}
+

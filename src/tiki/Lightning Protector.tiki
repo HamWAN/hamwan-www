@@ -1,0 +1,8 @@
+Need stuff like this for the CAT5 runs up towers:
+
+http://www.streakwave.com/itemdesc.asp?ic=TP-ESP-1000-POE
+
+!!Known to be insufficient
+*[http://www.apc.com/resource/include/techspec_index.cfm?base_sku=pnet1gb|APC's PNET1B] due to a lack of shielding
+*[http://www.amazon.com/RiteAV-Ethernet-Protector-Lightning-Protection/dp/B00FY7GMEW/ref=sr_1_4?ie=UTF8&qid=1432321410&sr=8-4&keywords=ethernet+lightning+arrestor|RiteAV - Outdoor Ethernet POE+ / RJ-45 Surge Protector] due to a failure to bond the shielding to the ground
+*[http://www.apc.com/products/resource/include/techspec_index.cfm?base_sku=PNETR6&tab=features|APC PNETR6] due to a lack of shielding

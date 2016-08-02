@@ -1,0 +1,26 @@
+A lot has changed since HamWAN first launched. We used to recommend the [http://www.titanwirelessonline.com/Poynting-5-8GHz-31dBi-Grid-p/at-30gr-58.htm|Poynting 5.9 GHz 30 dBi grid] and [http://www.balticnetworks.com/routerboard-metal-5shpn.html|Mikrotik RouterBOARD Metal 5SHPn wifi radio] to everyone. Now, many HamWAN sites are capable of MIMO -- meaning you'll get the best performance out of a similar MIMO client modem -- and there is a lot more compatible hardware on the market than there was before. Here is a comparison of a few options.
+
+!!Considerations when choosing hardware
+* Compatibility with HamWAN -- HamWAN sectors run Mikrotik nv2 TDMA mode in 5 and 10 MHz channels on 5.9 GHz. At the time of this writing, this requires a Mikrotik 802.11a/n modem (their 802.11ac modems cannot do 5 or 10 MHz channels) that is not frequency locked to Part 15.
+* Predicted signal strength in your area vs antenna gain -- areas with strong signal have more options for smaller antennas
+* Are you served by a MIMO site? If so, you'll get the best speeds out of MIMO hardware
+* Potential for icing -- when icing is expected, stick to solid antennas and radomes. Grid antennas attract ice.
+* Load rating of your support structure
+* Price
+
+!Client Hardware Comparison
+
+||Model & Description|Antenna Gain|Transmit Power|Effective Radiated Power (ERP)|MIMO|Wind Load|Survivability|Price
+__[https://www.streakwave.com/mmSWAVE1/Video/ARC-DA5830SD1_DS_080811.pdf|ARC ARC-DA5830SD1]__ -- Solid dish, 2ft, 30 dBi%%%__[https://www.streakwave.com/mmSWAVE1/Video/UDR235.pdf|RF Armor UDR235]__ -- OPTIONAL Shielded radome for uplink dish%%%__[https://www.streakwave.com/mmSWAVE1/Video/RB912_OUT_5.pdf|MikroTik RouterBOARD RB912UAG-5HPnD-OUT]__ -- BaseBox 5 GHz MIMO modem%%%%%%This is esentially the kit we use for PtP links on mountain-top HamWAN sites. It is very robust, but is also the most expensive option listed here. It is only necessary when icing is expected or optimal performance is required.|30 dBi|30 dBm|60 dB|Yes|176 lbs%%%116 lbs with radome|125 mph|[https://www.streakwave.com/itemdesc.asp?ic=ARC-DA5830SD1|$118]&nbsp;+&nbsp;shipping%%%[https://www.streakwave.com/itemdesc.asp?ic=UDR235|$130]&nbsp;+&nbsp;shipping%%%[https://www.streakwave.com/itemdesc.asp?ic=RB912UAG5HPnDOT|$74]%%%Total:&nbsp;$322&nbsp;+&nbsp;shipping
+__[https://www.streakwave.com/mmSWAVE1/Video/RB911_series%20(1).pdf|MikroTik RB911G-5HPnD-QRT]__ -- "QRT-5" integrated panel antenna and modem|23 dBi|30 dBm|53 dB|Yes|?|&nbsp;|[https://www.streakwave.com/itemdesc.asp?ic=RB911G5HPnDQRT&eq=&Tp=&o1=0|$149]
+__[https://www.streakwave.com/mmSWAVE1/Video/LHG.pdf|MikroTik RB LHG-5nD]__ -- Integrated grid antenna and modem%%%%%%This device comes in a US and International/World version. __Be sure to buy the world version!__ The US version cannot tune to HamWAN 5.9 GHz channels. You will need to provide a copy of your license to purchase.|24.5 dBi|23 dBm|47.5 dB|Yes|?|&nbsp;|[https://www.streakwave.com/itemdesc.asp?ic=RBLHG-5nD|$55]
+__[http://i.mt.lv/routerboard/files/sxt_5-150206095417.pdf|Mikrotik RB SXT 5HPnD r2]__ -- "SXT 5" integrated antenna and modem|16 dBi|30 dBm|46 dB|Yes|?|&nbsp;|[http://www.balticnetworks.com/mikrotik-rb-sxt-high-gain16dbi-5ghz-dual-polarity-cpe.html|$77]
+__[http://i.mt.lv/routerboard/files/sxt_5-150206095417.pdf|Mikrotik RB SXT 5nD r2]__ -- "SXT Lite5" integrated antenna and modem|16 dBi|27 dBm|43 dB|Yes|?|&nbsp;|[http://www.balticnetworks.com/mikrotik-rb-sxt-lite5-16dbi-5ghz-dual-polarity-cpe.html|$51]
+__Poynting__ 5.9 GHz 30 dBi grid antenna%%%__[https://www.streakwave.com/mmSWAVE1/Video/metal-52.pdf|Mikrotik RouterBOARD Metal 5SHPn]__ modem%%%%%%This is the original HamWAN recommended client kit. It is still one of the strongest antenna and modem combinations available, but it does not support MIMO. If you are connecting to an older HamWAN site without MIMO, this solution is optimal. For newer sites, you'll get better speeds with MIMO hardware.|30 dBi|31 dBm|61 dB|No|?|100 mph|[http://www.titanwirelessonline.com/Poynting-5-8GHz-31dBi-Grid-p/at-30gr-58.htm|$81]%%%[http://www.balticnetworks.com/routerboard-metal-5shpn.html|$86]%%%Total: $167 + shipping||
+
+{REMARKSBOX(type="warning" title="Warning")}
+Avoid Mikrotik's 802.11ac modems. These are incapable of tuning the 5 and 10 MHz channels used by HamWAN and are therefore incompatible.
+{REMARKSBOX}
+
+!Still not sure what you need?
+Drop by the ((Wiki Home Page|#Mailing_List|mailing list or IRC channel)) and give us some details about your project. We'll try to find a good match.

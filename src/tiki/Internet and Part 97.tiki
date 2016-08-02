@@ -1,0 +1,33 @@
+The Internet is the largest system of computer networks in the world. The ability to communicate with Internet systems is immesely valuable. Naturally, we want our network to have that capability.
+!!!!"How can you put Internet traffic over ham radio? Doesn't that violate ~np~_____~/np~?"
+The Internet is huge. It consists of many networks, protocols, services, and content. Some of that may not be allowed over ham radio, but the Internet itself is perfectly legal over ham radio.
+
+Many amateur radio services are available over the Internet, such as Echolink, IRLP, Allstar, Winlink, APRS, and AMPRNet. Other services like email generally comply with all the requirements for transmission over ham radio, but care should be taken to ensure no prohibited content traverses the airwaves.
+!Excerpts of Part 97 that affect HamWAN
+!!!!§ 97.113 Prohibited transmissions. 
+^(a) No amateur station shall transmit:
+...
+(3) Communications in which the station licensee or control operator has a pecuniary interest, ...^ This means you may not operate a business over HamWAN. Using HamWAN to email your boss about an upcoming project would ''not'' be legal. However, personal communication with a business is allowed. For example, ordering a pizza over HamWAN would be perfectly legal, because you are not the owner or employee of the pizza business. (This example comes from the long-standing autopatch guidelines from the ARRL, linked below.)
+
+
+^(4) ...; messages encoded for the purpose of obscuring their meaning, except as otherwise provided herein;^ This means you can not use the privacy features of cryptography over HamWAN, as this would obscure the meaning of the message. It does not ban cryptography outright. Common cryptographic protocols, such as TLS, make ciphers optional. With proper configuration, ((SSL without Encryption|SSL/TLS can be used for authentication and message signing)) without obscuring the content of the message. ((SSH Without Encryption|SSH can also be configured to disable ciphers)). However, default configuration for these protocols forces the use of ciphers, so be cautious when accessing external systems such as most HTTPS websites. ''HTTPS servers operated by HamWAN have been specially configured to not allow ciphers.''
+
+
+^ obscene or indecent words or language; or false or deceptive messages, signals or identification.
+(5) Communications, on a regular basis, which could reasonably be furnished alternatively through other radio services. ^ This means that HamWAN should not be a replacement for a home ISP. It may seem tempting, but we never intended HamWAN to be used this way. HamWAN is for communicating with other hams.
+
+!!!!§ 97.219 Message forwarding system. 
+^(a) Any amateur station may participate in a message forwarding system, subject to the privileges of the class of operator license held.
+(b) For stations participating in a message forwarding system, ~~#000,yellow:the control operator of the station originating a message is primarily 
+accountable for any violation of the rules~~ in this part contained in the message.
+(c) Except as noted in (d) of this section, for stations participating in a message forwarding system, the control operators of forwarding 
+stations that retransmit inadvertently communications that violate the rules in this part are not accountable for the violative
+communications. They are, however, responsible for discontinuing such communications once they become aware of their presence.
+(d) For stations participating in a message forwarding system, the control operator of the first forwarding station must: 
+~~black,yellow:(1) Authenticate the identity of the station from which it accepts communications on behalf of the system; or ~~
+~~black,yellow:(2) Accept accountability for any violation of the rules~~ in this part contained in messages it retransmits to the system. ^ This means that the network operators are not responsible for violations by users as long as those users are authenticated. As a network operator, if you discover a user has violated the rules with a transmission, you should ban that user or block the violating content as soon as possible.
+!The Autopatch Standard
+Hams have been connecting radios to the public switched telephone network for years. This is not dissimilar to HamWAN's connection to the Internet. The ARRL has prepared a set of guidelines for appropriate use of such connections:
+
+[http://www.arrl.org/phone-patch-guidelines|ARRL Phone Patch Guidelines]
+

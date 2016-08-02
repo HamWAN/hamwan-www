@@ -1,0 +1,7 @@
+Live video stream from Field Day 2015 on Mercer Island, WA:
+
+# Start [http://www.videolan.org/vlc/index.html|VLC]
+# Press Ctrl-N
+# Paste in this URL: ~np~http://video.seattle.hamwan.net:8080/video.mpg~/np~
+# Wait up to a minute for the stream to buffer
+

@@ -1,0 +1,24 @@
+{maketoc}
+!#Overview
+Two categories of automation would be useful:
+* Router administration
+* Server administration
+Server administration is admittedly the easier of the two, because it doesn't require knowledge of network topology, and there are many existing tools for server automation.
+
+!#Ansible
+Remote host dependencies:
+* SSH
+* Python
+Ansible works by sending a Python script to the remote host via SSH and running it. This limits its use to operating systems that support Python. Linux does; RouterOS does not.
+
+While Ansible-proper cannot execute commands on ROS, we can use pieces of it to construct our own automation platform. This is the idea behind http://portal.hamwan.org/host/ansible.json . Here we output our list of hosts in Ansible's inventory format so that custom automation software can filter the list of hosts with Ansible selector syntax. Linux servers in this list can be controlled with Ansible itself.
+
+!#Chef
+!#Docker
+!#Fabric
+http://www.fabfile.org/
+!#Puppet
+!#SaltStack
+!#Vagrant
+!#CoreOS
+

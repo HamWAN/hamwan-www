@@ -1,0 +1,3 @@
+!!!Output Power vs. Spectrum
+::{img attId="66"}::
+The above animated image shows a progression of output power level settings from +20dBm to +32dBm, inclusive.  The nature of OFDM peak to average power ratio causes ever-increasing amplifier distortion and sideband behavior as the output power is increased and the amplifier clips.  The measurements were taken through a -20dB directional coupler into a terminator.  The displayed marker readings are therefore 20dB lower than actual power.  Resolution bandwidth was set to 3MHz.

@@ -1,0 +1,67 @@
+#Give your modem a name that tells us where it's located and which ((Sites|site)) it's linking to.  For example:
+##{CODE(caption="AE7SJ's modem linked to the Paine Field cell site")}
+/system identity
+set name=AE7SJ-Paine
+{CODE}
+#Set a password for the admin user.
+## Using Winbox: Click System -> Users -> Users tab -> double click admin -> Password...
+## {CODE(caption="Set password using terminal")}
+/user set admin password=
+/console clear-history
+{CODE}
+#To support shared administration, add the following HamWAN Network Administration accounts into the "full" group.  Usernames are case sensitive.  For the passwords, pick whatever secure password you like. The ones printed here are randomly generated in your browser. Password authentication will never be used when HamWAN accesses your modem.
+#{CODE()}
+/user add
+name=eo group=full password=
+name=NQ1E group=full password=
+name=nigel group=full password=
+name=osburn group=full password=
+name=tom group=full password=
+name=monitoring  group=read password=
+/console clear-history
+{CODE}
+#To support shared administration, add SSH keys for the HamWAN Network Administration accounts.
+##Download and save each key attached to the bottom on this page.
+##Drag and drop it into the Files window on your modem.
+##{CODE(caption="Import SSH keys and associate them with the right accounts")}
+/user ssh-keys
+import public-key-file=key-dsa-eo.txt user=eo
+import public-key-file=key-dsa-NQ1E.txt user=NQ1E
+import public-key-file=key-dsa-nigel.txt user=nigel
+import public-key-file=key-dsa-osburn.txt user=osburn
+import public-key-file=key-dsa-tom.txt user=tom
+import public-key-file=key-dsa-monitoring.txt user=monitoring
+{CODE}
+#{CODE(caption="Remote Logging")}
+/system logging action set 3 bsd-syslog=no name=remote remote=44.24.255.4 remote-port=514 src-address=0.0.0.0 syslog-facility=daemon syslog-severity=auto target=remote
+/system logging add action=remote disabled=no prefix="" topics=!debug,!snmp
+{CODE}
+
+{HTML()}
+<div id="replace">
+hello password=
+</div>
+{HTML}
+
+{JQ()}
+function generatePassword() {
+    var length = 16,
+        charset = "abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+}
+
+$('pre, span').each(function() {
+\tif (this.innerHTML) {
+        var html = this.innerHTML.replace(
+\t\t\t\t'password=',
+\t\t\t\t'password=' + generatePassword()
+\t\t\t)
+\t\tconsole.log(html);
+\t\tthis.innerHTML = html;
+\t}
+});
+{JQ}

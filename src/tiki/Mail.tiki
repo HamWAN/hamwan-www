@@ -1,0 +1,18 @@
+{maketoc}
+!Outgoing Mail
+mail.hamwan.net accepts outgoing mail from addresses within HamWAN IP address space. Simply point your SMTP client to mail.hamwan.net.
+
+!Incoming Mailboxes
+HamWAN currently does not provide mailboxes for incoming mail. The design goal for this service is to have many mailbox servers and no single point of failure. Here are some ideas on how to achieve that:
+
+!!Dovecot Replication with dsync
+http://wiki.dovecot.org/Replication -- Uses the Dovecot replication plugin to syncronize mailboxes between exactly __two__ servers. This could work well on HamWAN, but fails the multi-master design goal because there is no supported mechanism for more than two servers.
+
+!!Dovecot with Filesystem-based Replication
+http://wiki2.dovecot.org/MailLocation/SharedDisk -- Dovecot supports keeping mail an index file in a clustered filesystem. Only a few configuration changes are required to make Dovecot tolerant of shared storage. This approach will likely work well for HamWAN if we can identify a distributed filesystem that meets our requirements.
+
+!!!Ceph FS
+Ceph FS appears to support our requirements: it can replicate files between n nodes with no master.
+
+This document describes using Ceph FS for Dovecot clustering: https://docs.switzernet.com/3/public/130910-ceph-dovecot/index.pdf
+

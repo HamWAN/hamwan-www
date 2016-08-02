@@ -1,0 +1,44 @@
+!!!Official Selection
+((Laird SAH58-120-16-WB))
+* SISO
+* Deployed at ((Capitol Park)), ((Paine|Snohomish County DEM)), ((Baldi)), and ((Mirrormont))
+
+!!!MIMO Option
+((Ubiquiti 5G-19-120))
+* MIMO
+* Deployed at ((Haystack))
+* Match with [http://www.balticnetworks.com/mikrotik-rb-912uag-5hpnd-out-5ghz-mimo-1000mw-access-point.html|BaseBox5 (RB912UAG-5HPnD-OUT)] and [http://www.balticnetworks.com/rf-elements-easybrackettm-912.html|MT-EB_912 - RF Elements EasyBracket™ 912]
+
+!!!Suppliers
+||Type|Supplier|Cost|Notes|
+Teletronics 15-704|[http://streakwave.com/itemdesc.asp?ic=15-704&eq=&Tp=|streakwave.com]|$104| |
+Laird SA4958-120-19-DP|[http://streakwave.com/itemdesc.asp?ic=SA4958-120-19-D&eq=&Tp=|streakwave.com]|$193.04|Pricing after login|
+Laird SAH58-120-16-WB|[http://streakwave.com/itemdesc.asp?ic=SAH58-120-16-WB&eq=&Tp=|streakwave.com]|$176.06|Pricing after login|
+ARC ARC-VS5818SD1|[http://www.streakwave.com/itemdesc.asp?ic=ARC-VS5818SD1|streakwave.com]|$72.83| |
+RF Elements Sector MIMO 5-120|[http://streakwave.com/itemdesc.asp?ic=SECM5120&eq=&Tp=|streakwave.com]|$67.50|Needs jumpers|
+Laird SA4958-120-19-DP|[http://streakwave.com/itemdesc.asp?ic=SA4958-120-19-D&eq=&Tp=|streakwave.com]|$207.89|Possibly too high gain/narrow| 
+Ubiquiti AirMax 5G-16-120|[http://ubnt.com|Ubiquiti]|$78.95|Yet to test |
+Ubiquiti AirMax 5G-19-120|[http://ubnt.com|Ubiquiti]|$144.00|Deployed at ((Haystack))||
+
+
+!!!Alternatives
+#Teletronics 15-704 - MIMO Sector Ant 5.8GHz 16dBi @ 120deg ||__Pros__|__Cons__|
+Expandable to cross-polarized MIMO operation|F/B might be low|
+Broadband allows frequency agility|Pigtails might be needed?||
+#Laird SA4958-120-19-DP - 5GHz 19dBi MIMO Dual Pol Sector ||__Pros__|__Cons__|
+High gain|Narrow vertical beamwidth (4 deg)|
+Broadband|Pigtails might be needed?|
+ |High cost||
+#Laird SAH58-120-16-WB - 16dBi 120Deg 5.8GHz Wide Band HP ||__Pros__|__Cons__|
+Bottom connector will not require pigtails|High cost|
+>25dB F/B|Not as broadband, 5.4-5.85GHz only||
+#We design our own sector antenna!  Since the prices of these things are relatively high, and they seem like relatively simple devices, it might be a feasible task to design a sector antenna on the cheap.  If they can be produced for $30-$40 a piece, that may justify the cost of development and deliver a true savings over the commercial offerings.  Would need 6GHz-capable lab equipment to generate RF, measure reflected power (or complex impedance in general), and measure the radiation patterns.  Forget plastic cases, polyurethane spray could provide weather protection.  If it's light and small enough, it could be mounted with zip-ties and tilted with shims.
+#ARC ARC-VS5818SD1 - 16dBi Dual Polarization Variable Beamwidth (60-120deg) ||__Prox__|__Cons__|
+Can use MIMO technology down the line without changing antennas|Inconvenient location of RF ports, will need right angle adapter or jumper|
+Cost-effective|Unused port will need to be weather-proofed|
+Can simply change angle of radiation to add more sectors to a site|Radiation patterns look too good to be true|
+Really wide bandwidth|Downtilt may shift if nuts/bolts loosen a bit, or if pressure is applied to antenna||
+
+!!!Enhancements
+Closely located sector antennas can interfere with each other.  In order to reduce this, shields can be manufactured.  For the Ubiquiti line of antennas, commercial shields are available at about $100/ea.  [http://www.rfarmor.com/]
+

@@ -1,0 +1,43 @@
+!!!Summary
+While the per-antenna dedicated pages do a good job of measuring each antenna independently for their frequency response and radiation pattern characteristics, it's also important to actually compare the antenna gains directly.  The most beautiful radiation pattern isn't worth much if it's 10dB below the competition.  Here the antennas are tested on the exact same RF range, and their maximum recorded signals are reported.
+
+!!!Description of Measurement Setup
+TX and RX antennas are spaced by 100m over a flat grassy surface.  No nearby obstacles are present.  The antennas are mounted at an approximate height of 5.5ft above ground.  The TX antenna remains fixed as the ((Laird GD5W-21P)).  It is fed a +10dBm signal over 100m of LMR400 coax.  The loss here is roughly 36dB, which means the antenna is only fed with -26dBm, or roughly 2.5µW.  The frequency used is 5.885GHz, which is the center frequency for Channel 2 of the ((Spectrum Allocation|HamWAN band plan)).  There are further (much smaller) cable losses on the RX side before the signal is fed into an HP 8566A spectrum analyzer.  The spectrum analyzer is setup in the following manner:
+*Center Frequency = 5.885GHz
+*Resolution Bandwidth = 300Hz
+*Sweep Time = 1.0s
+*Attenuation = 0dB
+*Reference Level = -30dBm
+*dB/division = 10
+*Frequency Span = 0Hz (Zero Span mode)
+In this setup the very bottom of the display represents -120dBm, although the noise level is a little higher than that.  For each antenna, after it is connected, Max-Hold mode is engaged as the antenna is aligned to maximize the recorded signal.  A marker is kept on the trace to simplify numeric readings.
+
+To help antenna alignment in the field, the Y-output of the spectrum analyzer (amplitude) is fed into voltage controlled oscillator, which feeds a speaker.  Positive changes in signal amplitude result in higher audible frequencies.  The antenna under test can therefore be easily wiggled around in the field while listening for the highest frequency.  The VCO is implemented using the HP 8116A function generator.  This technique can be used to align antennas over much larger distances if the VCO output is fed to a VHF/UHF radio, and transmitted to a repeater.  Technicians on both sides of the link can work together to get real-time feedback on the success of their adjustments.
+
+!!!Measurement Results - High Gain Antennas
+||__Antenna__|__Maximum dBm__|__Adjacent dB Delta__|__Facility__
+((ARC ARC-DA5834SD1))|-67.0|0|100m Range
+((Poynting K-GRID-003-06))|-68.6|-1.6|100m Range
+((Laird GD5W-28P))|-72.2|-3.6|100m Range
+((Laird GD5W-21P))|-79.5|-7.3|100m Range||
+
+!!!Measurement Results - Sector Antennas
+||__Antenna__|__Maximum dBm__|__Adjacent dB Delta__|__Facility__
+((ARC ARC-VS5818SD1))|-79.4|0|100m Range
+((ITelite Sector 50018H))|-81.0|-1.6|8m Range (reading adjusted via Poynting reference)
+((Ubiquiti 5G-19-120))|-82.5|-1.5|100m Range
+((Ubiquiti 5G-19-120))|-83.1|-0.6|8m Range (reading adjusted via Poynting reference)
+((Laird SAH58-120-16-WB))|-83.2|-0.1|8m Range (reading adjusted via Poynting reference)
+((Ubiquiti 5G-16-120))|-83.3|-0.1|100m Range
+((Laird SAH58-120-16-WB))|-83.3|0|100m Range
+((Ubiquiti 5G-16-120))|-85.4|-2.1|8m Range (reading adjusted via Poynting reference)
+((Teletronics 15-704))|-86.1|-0.7|8m Range (reading adjusted via Poynting reference)
+((RF Elements SECM5120))|-90.0|-3.9|8m Range (reading adjusted via Poynting reference)||
+
+!!!Conclusions
+The ((Poynting K-GRID-003-06)) continues to prove itself as a solid performer at a good price point for most people.  When the extra 1.6dB/side (or 3.2dB link gain if used on both sides) is really important, the ((ARC ARC-DA5834SD1)) can be used.  This will cost an extra $200/side over the ((Poynting K-GRID-003-06)).
+
+As far as the sector antennas go, there's something strange happening with the Ubiquitis.  There's only a 0.8dB difference between them!  The ((Ubiquiti 5G-19-120)) is supposed to be 3dB higher than its smaller sibling, but it's only 0.8dB higher.  This may all need to be re-tested due to the suspicious nature of the results.  If one is to believe the marketing, that both the ((Laird SAH58-120-16-WB)) and ((Ubiquiti 5G-16-120)) are 16dBi antennas, then their dB Delta of 0 is spot on.  
+
+I'm concerned that the proximity of the ground may be skewing results somehow.  The only true way to test these antennas head-to-head (aside from an expensive anechoic chamber) is to have them mounted high up with their Fresnel zones free and clear.
+

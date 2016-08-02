@@ -1,0 +1,57 @@
+!::~~#F00:Project Cancelled: Authentic Boonton 2500 calibrator was found at a resonable cost and acquired.~~::
+{toc}
+!!!Summary
+The {FILE(type="gallery" fileId="9")}Boonton 2500 DC Calibrator{FILE} required for calibrating {FILE(type="gallery" fileId="10")}Boonton 4200{FILE} and 9200 series power meters is too expensive, even on the second hand market.  eBay prices put it at around $400.  This device is simply meant to generate precise low-level voltages with specific source impedances.  It is a series of resistors and switches, all running off a single 10V regulated power supply.  The used units are old by now, and may be suffering from defects or drift from their factory specs.  Given the price and uncertainty in buying a real Boonton 2500, this is a project to create a compatible alternative product to be used when calibrating HamWAN's Boonton 4200 RF Power Meter.  The design is cost-optimized and the circuits are modernized.  If final build cost is < $150, this will be a success.
+
+!!!Requirements
+#Meets or exceeds all {FILE(type="gallery" fileId="9")}Boonton 2500 specifications{FILE}
+##±0.15% (1,500ppm) voltage accuracy (this is an error tolerance of just ±13.5nV on the lowest setting!)
+##±2% (20,000ppm) source resistance accuracy in 300kΩ and 500kΩ modes
+#Build cost below $150
+#Compact
+#Reliable / Stable
+#RFI resistant
+
+!!!Enclosure
+To accurately generate and transmit 9µV at fairly high source impedances it is critical that the whole design be shielded from RFI.  The slightest radio signals can swing the output wildly.  The Context Engineering 3008 all-aluminum chassis will do this nicely.
+
+!!!Line Filter
+The original design did not call for a power line filter, but this one does.  A socket-integrated unit is best, since it provides shielding and keeps any RFI out of the insides of the enclosure.  Cutting a proper enclosure hole to accommodate such a filter will be tricky.
+
+!!!Power Requirements
+The original design allowed multi-voltage and multi-frequency operation.  Due to the use of a line filter in this design, the only line power supported will be 120VAC @ 60Hz.  The ±10% line voltage tolerance is supported as per the original design.
+
+!!!Voltage Reference
+Voltage references have improved dramatically since the original Boonton design.  The original [http://www.analog.com/static/imported-files/data_sheets/REF01.pdf|REF-01C] chip used pales in comparison to a modern [http://cds.linear.com/docs/Datasheet/1031fb.pdf|LT1031] device.  The out of the box accuracy is nearly an order of magnitude improved (0.3% ⇒ 0.05%).  The PSRR is roughly 40dB higher (~60dB ⇒ ~100dB).
+
+!!!Resistors
+High precision resistors are key to accuracy in this circuit.  The original design calls for strange values, so multiple more common values will need to be stacked to achieve these oddball resistances.
+
+!!!Relays
+The cost of the original 8-way, 3-plane, single-pole rotary switch is really high, about $150 for modern equivalents.  Therefore, the whole design will be re-worked with relays, buttons and control logic instead of a rotary switch.
+
+!!!Buttons
+Which ones to use?  It would be good if the Zero setting were selectable without having the hold the button down as in the original design.  Make it part of the general range selection, or use a latching pushbutton / toggle switch?
+
+!!!Control Logic
+Use a small CPLD?
+
+!!!Indicators
+Use 7-seg LED or a row of LEDs?  6A/6B mode can be distinguished by displaying a 6 and then using the decimal to differentiate A/B?  0/Zero can be distinguished similarly.  How to display source resistance?
+
+!!!Connectors
+The Boonton connector is generically known as a 80-PC2F on the female socket side and a 80-MC2M on the male plug side.  Boonton original female connectors (P/N: 09214101C) are prohibitively expensive at $156/ea, and Boonton original jumper cables (P/N: 41-2A) are prohibitively expensive at $147/ea.
+
+!!!Sensor Cable
+A good shielded cable needs to be identified to be used between the 80-MC2M connectors.  The mode of transmission is balanced.
+
+!!!Bill of Materials
+#[http://contextengineering.com/split_body_enclosures.html|Context Engineering 3008 All-Aluminum Chassis]
+#
+
+!!!Manufacturing
+#[http://www.goldphoenixpcb.com/|Gold Phoenix]
+#[http://www.expresspcb.com/|ExpressPCB]
+#[http://www.4pcb.com/|4PCB]
+#[http://www.protocase.com/|Protocase]
+

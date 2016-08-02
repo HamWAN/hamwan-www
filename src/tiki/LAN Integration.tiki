@@ -1,0 +1,121 @@
+{maketoc}
+!#Snyopsis
+The following sections represent some of the various ways in which a local area network (LAN) can be integrated with the HamWAN network.  Please consult the following symbol legend when studying the depicted configurations:
+::{HTML()}<div style="height: 300px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=173" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+
+!#Layer 2 Topologies (Physical / Switching)
+
+!!#Computer Routed
+
+!!!#Dedicated Computer
+::{HTML()}<div style="height: 216px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=174" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+In this mode, a dedicated computer connects to the HamWAN modem and sets its default gateway to point at the HamWAN modem.
+
+!!!#Dedicated Network Card
+::{HTML()}<div style="height: 216px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=176" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+In this mode, a second network card is configured to sit on the same subnet as the HamWAN modem.  Routing considerations are described below.
+
+!!!#Dedicated VLAN / Shared LAN
+::{HTML()}<div style="height: 303px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=177" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+In the Dedicated VLAN mode, a virtual network card is configured to sit on the same subnet as the HamWAN modem.  The ability to do this is operating system and driver dependent.
+
+In the Shared VLAN mode, no changes are made to the network card, but routes are added to the computer.  Routing considerations are described below.
+
+!!#Network Routed
+::{HTML()}<div style="height: 216px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=178" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+In this mode, the HamWAN router is connected via a dedicated network to the main site router.  This leaves the routers to do the routing.  Any computers attached to the LAN will benefit from HamWAN routing without any special configuration.
+
+!#Layer 3 Considerations (Logical / Routing)
+
+!!#Computer Routed
+
+!!!#Dedicated Computer
+This is the simplest configuration which offers a complete and simple routing picture.  A computer simply has its default gateway configured to point at the HamWAN modem and that's it.  If only 44-net communication is desired, the computer can be set to learn routes from the HamWAN modem.  This is operating-system dependent though.
+
+!!!#Dedicated Network Card / Dedicated VLAN / Shared LAN
+From a routing perspective, these are all similar configurations.  A network card (physical or virtual or pre-existing) is configured to share a common subnet with the HamWAN modem.  Then, computer routing table entries are added to tell the computer that certain networks (44-net) are available via the HamWAN modem IP address.  This can be as simple as manually adding a static route for 44.0.0.0/8 or as complicated as standing up a routing protocol (BGP / OSPF) between the HamWAN modem and the computer.  The ability of the computer to support routing protocols is dependent on the operating system.
+
+This configuration is prone to asymmetrical routing issues, described below.
+
+!!#Network Routed
+The routing situation here is much like the one above (Dedicated Network Card / Dedicated VLAN / Shared VLAN).  The router dedicates an interface (physical or virtual) to communicating with the HamWAN modem.  It then adds routing table entries for 44-net subnets and points them at the HamWAN modem.  Most routers have the ability to use routing protocols, so in this sense the situation is improved through automation.
+
+This configuration is also prone to asymmetrical routing issues, described below.  However, most routers also have the ability to fix these issues.
+
+!!#Asymmetrical Routing
+::{HTML()}<div style="height: 505px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=180" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+There is a potential problem when a packet reaches the computer from 44-space via the ISP connection.  Depending on the computer's or main router's routing table, it may send the reply via the HamWAN network.  If the computer in question is behind a Network Address Translation (NAT) device and features a private (eg: RFC1918) IP address, the reply packet sent via the HamWAN modem will either carry this private IP address or the HamWAN modem's public address, depending upon the HamWAN modem's egress NAT (SNAT) configuration.
+
+The way to solve this is to ensure that any:
+#Inbound connections
+#From 44/8 (or more specifically, from any AMPR-registered network)
+#To the main router's public IP address
+#Via the main router's public interface
+always have their reply packets sent out via the main router's public interface.  This can be accomplished on any Linux-based routing platform, and should also be possible on other platforms.  Here is a sample RouterOS implementation:
+
+{CODE(caption="Routing policy to handle asymmetrical responses")}
+/ip firewall connection tracking
+set enabled=yes
+/ip firewall mangle
+add action=mark-connection chain=prerouting dst-address=<Your Public IP> in-interface=<Your Public Interface> new-connection-mark=PublicAMPR src-address=44.0.0.0/8
+add action=mark-routing chain=prerouting connection-mark=PublicAMPR new-routing-mark=PublicAMPR
+/ip route
+add gateway=<Your Public Gateway> routing-mark=PublicAMPR
+/ip rule
+add action=lookup-only-in-table routing-mark=PublicAMPR table=PublicAMPR
+{CODE}
+
+!!#Minimizing IP Address Usage
+The 44-net address pool is small.  It's a good idea to use the IP addresses conservatively, especially if your allocation is small.  If the goal is to run 44-net IPs on the LAN, then their use can be optimized by only assigning them to the devices which need to be addressable on 44-net directly.  The other devices on the LAN which do not participate in 44-net communication or are fine with just outbound 44-net communication can retain private IP space assignments and rely on NAT to communicate with 44-net.  The following diagram will be used to depict the various packet flows when a private transit network is used on the LAN.
+
+::{HTML()}<div style="height: 533px"><img src="https://www.hamwan.org/t/tiki-download_wiki_attachment.php?attId=182" style="transform-origin: top center; transform: scale(3); -webkit-transform-origin: top center; -webkit-transform: scale(3)" /></div>{HTML}::
+
+Both routers in the LAN are speaking OSPF to each other.  The HamWAN router is announcing the availability of the user's subnet (44.0.0.0/30) via BGP to HamWAN.  On the main router, there exist two static route entries:
+#44.0.0.1/32 via 192.168.0.2
+#44.0.0.2/32 via 192.168.0.3
+The main router is also configured to generate ICMP redirect messages.
+
+{CODE(caption="Set ICMP redirect generation on RouterOS (default on)")}
+/ip settings set send-redirects=yes
+{CODE}
+
+For the sake of this example, we'll assume that the 44.0.0.0/30 subnet is part of a larger HamWAN BGP announcement to the Internet, and is therefore fully routable via HamWAN.
+
+!!!#External IP to A
+When an external Internet IP wants to communicate with computer A, it sends a packet to 44.0.0.1.  This subnet is announced to the Internet via HamWAN, so the packet is delivered to the user's HamWAN router via the microwave interface.  Since the HamWAN router has learned of a route for 44.0.0.1/32 via the OSPF session with the Main router, it forwards the packet to the Main router.  The Main router then uses its static route for 44.0.0.1/32 and sends the packet to the MAC address of 192.168.0.2.  This is computer A, which is the right destination for the packet.
+
+!!!#Return Path - A to External IP
+When computer A responds to the packet it just received, it uses its default gateway, which sends the response to the Main router.  The Main router needs to apply a routing policy at this point and recognize that the packet is coming from 44-space and going to non-44 space.  This means it must leave via an Internet peering point appropriate for the source IP, otherwise it may be subject to egress filtering.  In this case, that means it must leave via HamWAN.  The Main router forwards the packet to the HamWAN router, and the HamWAN router uses its BGP-learned default route to forward the packet to the HamWAN cell site for the return trip.
+
+!!#Source Address Selection
+
+!!!#Windows
+[http://blogs.technet.com/b/networking/archive/2009/04/24/source-ip-address-selection-on-a-multi-homed-windows-computer.aspx]
+!!!#Mac
+?
+!!!#Linux
+?
+
+!!#Integrating With AMPRnet
+{HTML()}<style>.wikicell {border: 1px solid black;}</style>{HTML}
+||__LAN Configuration__|__HamWAN via__|__AMPRnet via__|__Internet via__
+__Standalone Private LAN__|ISP w/ NAT|ISP w/ NAT|ISP w/ NAT
+__Standalone Private LAN + HamWAN Dish__|ISP w/ NAT, HamWAN Dish|ISP w/ NAT, HamWAN Dish|ISP w/ NAT, HamWAN Dish
+__AMPRnet LAN__|AMPR Tunnel, ISP w/ NAT|AMPR Tunnel, ISP w/ NAT|ISP w/ NAT, UCSD Tunnel
+__AMPRnet LAN + HamWAN Dish__|AMPR Tunnel, ISP w/ NAT, HamWAN Dish|AMPR Tunnel, ISP w/ NAT, HamWAN Dish|ISP w/ NAT, UCSD Tunnel, HamWAN Dish
+__AMPRnet LAN + BGP__|ISP, AMPR Tunnel|AMPR Tunnel, ISP|ISP
+__AMPRnet LAN + BGP + HamWAN Dish__|ISP, AMPR Tunnel, HamWAN Dish|AMPR Tunnel, ISP, HamWAN Dish|ISP, HamWAN Dish||
+Even though HamWAN provides access to all AMPR networks, your commercial Internet service can provide this too!  Please do keep packets off the microwave when it's feasible.  To accomplish this, your main router should participate in the AMPR tunnel mesh.  HamWAN has published software for doing this on RouterOS available here:
+
+[https://github.com/HamWAN/hamwan_scripts/tree/master/amprupdate|AMPR Update Script]
+
+When you're importing routes from the HamWAN microwave modem, you may wish to increase their cost compared to these AMPR tunnels you're holding directly.
+
+When you're participating in Internet-facing BGP, you should give preference to the un-tunnelled routes to other AMPR networks.  This means your router needs to hold the entire Internet IPv4 table to make a decision between the same prefix being available via IPIP or your ISP.  Responses should be handled via either interface.
+
+!!#Optimizing User and Application Experience
+During a failover event, if NAT is being used, connections will be severed.  This is an unpleasant experience for users and applications.  If the use of NAT is avoided, the re-routing of packets to a different network can be a seamless operation.  HamWAN and AMPR and IANA provide public IP address space to users.  If computers are configured to use these guaranteed-unique address spaces, the use of NAT can be avoided, and a seamless failover/failback can be achieved.
+
+!!#Maximizing AMPRnet Tunnel Availability
+When your AMPR subnet is used on a network with more than one BGP peer to the Internet, it is possible to establish redundancy so that neither peer site going down will put your AMPR network offline.  To do this, announce a small network to the Internet from your peering locations.  At time of writing, the samllest announcable IPv4 network is a /24.  A single IP in this network will serve as the IPIP tunnel gateway point announced to the rest of the AMPR participants.  This same IP will be used at all of your BGP peering sites (an anycast IP system) to terminate the IPIP tunnels.  AMPR partiipants who do not participate in Internet BGP (the majority) will only know to send their AMPR traffic to this one gateway IP.  When one of your sites goes down, your peer BGP session will stop, and the Internet will stop sending traffic for your gateway IP to that peer location.  Instead, it'll send it to your alternate locations.  AMPR participants will not experience any downtime (beyond the dead-peer-detection or BFD interval, and Internet route propagation delay), and AMPR communications will continue as intended.
+

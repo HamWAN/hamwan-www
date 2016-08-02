@@ -1,0 +1,99 @@
+~~#F00:__THIS PAGE IS A WORK IN PROGRESS__~~
+
+A Mikrotik RB2011 performs the role of layer 2 switch at HamWAN cell sites. Each of the sectors and PtP modems are plugged in to it.
+
+To avoid routing packets through the RB2011's CPU, configure the hardware switching chip as described here:
+http://wiki.mikrotik.com/wiki/Manual:Switch_Chip_Features#Port_Switching
+
+{CODE(caption="Sample core switch configuration, not verified, incomplete still")}
+# jan/02/1970 15:26:04 by RouterOS 6.7
+/interface ethernet
+set [ find default-name=ether7 ] master-port=ether6
+set [ find default-name=ether8 ] master-port=ether6
+set [ find default-name=ether9 ] master-port=ether6
+set [ find default-name=ether10 ] master-port=ether6
+
+/interface ipip
+add local-address=YOUR-TUNNELS-GATEWAY-IP name=MY-EDGE-R1 remote-address=THE-EDGE-ROUTERS-NON44NET-IP #Create your tunnel for getting to the edge router
+
+/ip hotspot user profile
+set [ find default=yes ] idle-timeout=none keepalive-timeout=2m mac-cookie-timeout=3d
+/port
+set 0 name=serial0
+/routing ospf instance
+set [ find default=yes ] distribute-default=if-installed-as-type-1 in-filter=Ham-default out-filter=Ham-default redistribute-bgp=as-type-1 redistribute-connected=as-type-1 redistribute-other-ospf=as-type-1 \\
+    router-id=ROUTERS-ADDRESS
+/interface bridge settings
+set use-ip-firewall=yes use-ip-firewall-for-pppoe=yes use-ip-firewall-for-vlan=yes
+/interface ovpn-server server
+set cipher=aes256 enabled=yes
+/ip address
+add address=ROUTERS-ADDRESS/28 interface=ether6 network=ROUTERS-NETWORK-ADDRESS
+/ip dns
+set allow-remote-requests=yes servers=8.8.8.8,8.8.4.4
+#Add route for the IPIP tunnel
+/ip route
+add distance=1 dst-address=YOUR-IPIP-TUNNEL-HERE/32 gateway=YOUR-TUNNELS-GATEWAY-HERE #make sure that the IPIP tunnel's gateway is whatever the gateway is that hits the internet
+
+/ip upnp
+set allow-disable-external-interface=no enabled=yes show-dummy-rule=no
+/lcd
+set default-screen=interfaces
+/lcd interface
+set sfp1 disabled=yes interface=sfp1
+set ether1 interface=ether1
+set ether2 disabled=yes interface=ether2
+set ether3 disabled=yes interface=ether3
+set ether4 disabled=yes interface=ether4
+set ether5 disabled=yes interface=ether5
+set ether6 disabled=yes interface=ether6
+set ether7 disabled=yes interface=ether7
+set ether8 disabled=yes interface=ether8
+set ether9 disabled=yes interface=ether9
+set ether10 disabled=yes interface=ether10
+/lcd interface pages
+set 0 interfaces=ether1
+/routing filter
+add action=accept chain=Ham-default
+/routing ospf interface
+add authentication=md5 authentication-key=YOUR-AUTH-KEY-HERE interface=ether6 network-type=broadcast
+/routing ospf network
+add area=backbone network=ROUTERS-NETWORK-ADDRESS/28
+/snmp
+set enabled=yes trap-community=public
+/system identity
+set name=ROUTER-NAME
+/system ntp client
+set enabled=yes mode=unicast primary-ntp=128.138.141.172 secondary-ntp=129.6.15.30
+{CODE}
+
+!Configuring VRRP
+Devices on the cell site's LAN which cannot speak OSPF and need a default gateway configured should be pointed at a floating IP serviced by all the LAN's routers.  This floating IP will be active on only one router at a time, and if that router fails, another will take over until there are no routers left.  This creates maximum survivability for any devices relying on that IP as their gateway.  PDUs and KVM controllers are a couple devices which require such a gateway.
+
+The convention in HamWAN is to use the highest IP on the LAN subnet as the VRRP floating IP.
+
+At least one router should be configured as the VRRP master, which should be the device that most often holds the best default route.  When in doubt, designate the site's main router as the VRRP master.
+
+#Choose a VRRP IP suitable for the LAN's subnet.  eg: 44.24.240.128/28 would use 44.24.240.142
+#Choose a master router.
+#{CODE(caption="On the master router")}
+/interface vrrp
+add authentication=ah interface=<LAN INTERFACE> name=vrrp1 password=<PASSWORD> priority=254 version=2
+/ip address
+add address=44.24.240.142/32 interface=vrrp1
+{CODE} Notice the use of the /32 subnet mask.  It's required.
+#{CODE(caption="On all other routers")}
+/interface vrrp
+add authentication=ah interface=<LAN INTERFACE> name=vrrp1 password=<PASSWORD> version=2
+/ip address
+add address=44.24.240.142/32 interface=vrrp1
+{CODE} Notice the lack of an explicit priority setting.  The default is 100 and routers will elect new masters based on highest IP instead.
+#{CODE(caption="Disable ICMP redirect generation on all routers")}
+/ip settings
+set send-redirects=no
+{CODE} This is to make the virtual gateway IP compatible with dumb devices which don't respect ICMP redirects.  These devices should not represent a large volume of traffic, so copying it is fine (vs. redirecting it).
+#{CODE(caption="Test your new VRRP setup")}
+/ping 44.24.240.142 # Or whatever your VRRP IP is
+{CODE}
+#Change all the default gateway entries on your dumb devices to use the new VRRP IP.
+

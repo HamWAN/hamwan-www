@@ -1,0 +1,192 @@
+{maketoc}
+!#Overview
+The HamWAN Open Peering Policy (OPP) is a standard for communication and routing between 44-net allocations and the Internet.  It has several nice properties:
+
+!!#Secure
+All communication between a 44-net user and an OPP server is tamper proofed by the use of IPSec(AH).  Any attempt to forge or inject packets that did not originate from the legitimate 44-net user will result in those packets being discarded.  In order to authenticate to an OPP server, a user must hold a valid certificate and corresponding private key.  The user is also limited to advertising only the 44-net allocations that are assigned to them, so traffic hi-jacking cannot take place.
+!!#Dynamic
+The presence or absence of networks is communicated via the long proven BGP protocol.  This is the standard protocol for routing on the Internet.  The user is free to announce their net block, and only their net block, in whatever way they choose.  This means everything from no announcement, to simply announcing the assigned block, to splitting the block up into multiple sub-blocks and announcing those partially or fully.  OPP puts full routing control in the hands of the user through this design.
+
+Furthermore, there is no need to register your public IP with some central authority.  Users can connect to an OPP provider from any Internet address.  This makes OPP compatible with typical Internet Service Providers (ISPs), who do not give their users static IP addresses, but instead hand IPs out at random from a pool.  Should a user's IP address change, a properly configured OPP router will re-establish the OPP connection and traffic flow will resume automatically.
+!!#Decentralized
+An OPP server will, at your discretion, announce your net block onto the Internet.  This doesn't mean this is the only place you can announce your net block.  The OPP design allows you to simultaneously peer with other OPP providers and get them to perform redundant announcements.  You can pick and choose who you wish to use.  When one provider goes down, your traffic simply re-routes via your other providers and your network stays reachable throughout.
+!!#Part 97 Compliant
+OPP does not perform any encryption.  The data is sent in clear text, and is merely accompanied by short digital signatures (Authentication Headers) which prove who the data is coming from and that it hasn't been tampered with.  This makes it possible to pass OPP traffic over amateur radio frequencies, should the need ever arise.
+!!#Scalable
+Because the OPP design allows multiple redundant providers, there is no limit to how many OPP providers can exist to provide 44net users with gateway services.  If a certain provider is overwhelmed with traffic, users can shift their traffic to other providers which may have faster service.
+!!#Efficient
+Most other virtual network solutions take on the cost of doing full data encryption to provide security, which is far more processor intensive than OPP's minimal approach of just using IPsec(AH).  Since amateur radio traffic is not supposed to be private, OPP sheds this encryption cost and reaps the speed benefits of just calculating authentication header values.
+!#User Implementation
+!!#Getting Started
+First, create an account on [https://portal.ampr.org/].  Request a net block to be allocated to you.  If you intend this net block to be announced on the Internet, it has to be at least of /24 in size (netmask: 255.255.255.0).  Alternatively, if you don't need all 254 IPs that a /24 gives you, you can work with your regional coordinator to give you a smaller allocation in a multi-user /24 net block meant to be announced on the Internet.
+
+Once you have your allocation, and if it's a dedicated /24 or larger, you'll need to get a Letter of Authorization (LoA) from [mailto:Brian@UCSD.edu|Brian Kantor] at the Amateur Radio Digital Communications corporation.  He will send you a form to fill out, requesting Network Service Provider (NSP) details.  Here are the details for HamWAN - Puget Sound Data Ring:
+
+||NSP name|HamWAN
+NSP postal address|1122 E Pike St Unit 570, Seattle, WA 98122
+NSP telephone|(206) 805-8865
+NSP email contact|netops@HamWAN.org
+NSP ASN|54688||
+
+Once you have your LoA, please forward it to netops@HamWAN.org and request an OPP account.
+!!#Getting Your Certificate
+If you already have a Logbook of the World (LotW) certificate, you're ready!  Simply forward the certificate (not your private key!) to netops@HamWAN.org.
+
+If you would instead like to get a HamWAN certificate, generate a 2048 bit (not 4096-bit!) Certificate Signing Request (CSR) and email it to netops@HamWAN.org.
+!!!#How to Generate a CSR
+A good way to do this is with the [https://www.openssl.org/|OpenSSL] utility:
+{CODE(caption="Generate a CSR")}
+# openssl genrsa -aes256 -out <YOUR CALLSIGN>-key.pem 2048
+# openssl req -new -sha256 -key <YOUR CALLSIGN>-key.pem -out <YOUR CALLSIGN>.csr
+{CODE}
+Be sure to use a strong password when doing the first command.  Your private key is stored encrypted with this password in the <YOUR CALLSIGN>-key.pem file.  Do not share this file with others, and do not share your encryption password for this key with others.  During the second command you will be asked several questions.  The answers don't matter.  We will set all the correct values when we send you back the signed certificate.  You will also be asked towards the end if you'd like to encrypt this CSR with a password.  Do not supply a password here since it is not needed, just hit enter.
+!!#Setup on MikroTik / RouterOS Edge Router
+The following setup instructions are for a situation where a MikroTik RouterOS device is connected directly between your Internet Service Provider (ISP) bridge modem and your Local Area Networks (LANs).  A publicly routable IP address is required to be present on this edge router for these instructions to work.
+!!!#Import Certificates
+Once you've received your <YOUR CALLSIGN>.pem signed certificate from the OPP provider, or if you've exported the signed LoTW certificate to this file, you'll need to upload it to your router, along with the private key that corresponds to this certificate.  You will also need to install the certificate of your OPP provider, called the OPP CERTIFICATE.  The OPP CERTIFICATE is typically saved as <OPP CALLSIGN>.pem.  In the case of HamWAN - Puget Sound Data Ring (PSDR), that OPP CALLSIGN is K7WAN and the certificate filename is K7WAN.pem, and is available [http://hamwan.org/t/tiki-download_wiki_attachment.php?attId=223&download=y|here].  Copy all three of these files to your router using scp or winbox drag n drop, then:
+{CODE(caption="Import Certificates")}
+/certificate import file-name=<YOUR CALLSIGN>.pem # It'll ask for a password, just hit enter
+/certificate import file-name=<YOUR CALLSIGN>-key.pem # Provide your private key password
+/certificate set [find common-name=<YOUR CALLSIGN>] name=<YOUR CALLSIGN>
+/certificate import file-name=<OPP CERTIFICATE>
+/certificate set [find common-name=<OPP CALLSIGN>] name=<OPP CALLSIGN>
+{CODE}
+Be sure to import your certificate prior to importing your private key.  The other way around will not work.
+!!!#Configure Tunnel Interface
+Your OPP provider will give you a set of 4 IP addresses.  Two of them dedicated to you (LOCAL), and two of them which live at the provider (REMOTE).  They will be consecutively numbered.  In the following instructions, the FIRST and SECOND words refer to the lower and higher numbered IP addresses, respectively.  In the case of HamWAN-PSDR the FIRST REMOTE ADDRESS is 44.24.246.0 and the SECOND REMOTE ADDRESS is 44.24.246.1.
+
+If you experience an error when you try to use the "!keepalive" option, it means you have an older version of RouterOS and should either upgrade or simply remove that option from the command line.
+
+{CODE(caption="Configure Tunnel Interface")}
+/interface ipip add name=HamWAN-PSDR mtu=1456 !keepalive clamp-tcp-mss=no local-address=<SECOND LOCAL ADDRESS> remote-address=<SECOND REMOTE ADDRESS>
+/ip address add interface=HamWAN-PSDR address=<FIRST LOCAL ADDRESS>/32 network=<FIRST REMOTE ADDRESS>
+/ip address add interface=HamWAN-PSDR address=<SECOND LOCAL ADDRESS>/32
+{CODE}
+
+Please do not try to run any services on the LOCAL addresses assigned to you.  They are not fully routable.  Keep any services on your dedicated 44net allocation.
+!!!#Configure IPsec(AH)
+Your OPP provider will also give you a 5th IP address, called the OPP ADDRESS.  In the case of HamWAN-PSDR, this address is 44.24.221.2.  Use it in the following configuration:
+{CODE(caption="Configure IPsec(AH)")}
+/ip ipsec proposal add auth-algorithms=md5 enc-algorithms=null name=vpn-ah
+/ip ipsec peer add address=<OPP ADDRESS>/32 auth-method=rsa-signature certificate=<YOUR CALLSIGN> enc-algorithm=aes-128 nat-traversal=no remote-certificate=<OPP CALLSIGN> exchange-mode=base
+/ip ipsec policy add dst-address=<FIRST REMOTE ADDRESS>/31  src-address=<FIRST LOCAL ADDRESS>/31 ipsec-protocols=ah proposal=vpn-ah sa-dst-address=<OPP ADDRESS> sa-src-address=0.0.0.0 tunnel=yes
+{CODE}
+!!!#Configure Firewall
+{CODE(caption="Configure Address Lists")}
+/ip firewall address-list add address=<YOUR 44NET> list=NONAT-src
+/ip firewall address-list add address=<FIRST REMOTE ADDRESS>/31 list=NONAT-dst
+/ip firewall address-list add address=<OPP ADDRESS> list=NONAT-dst
+/ip firewall address-list add address=<FIRST LOCAL ADDRESS>/31 list=My44Net
+/ip firewall address-list add address=<YOUR 44NET> list=My44Net
+/ip firewall address-list add address=10.0.0.0/8 list=RFC1918
+/ip firewall address-list add address=172.16.0.0/12 list=RFC1918
+/ip firewall address-list add address=192.168.0.0/16 list=RFC1918
+{CODE}
+{CODE(caption="Configure Mangle Rules")}
+/ip firewall mangle add action=change-mss chain=output new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+/ip firewall mangle add action=change-mss chain=forward new-mss=1378 protocol=tcp tcp-flags=syn tcp-mss=!0-1378
+/ip firewall mangle add action=mark-routing chain=prerouting new-routing-mark=HamWAN-OPP src-address-list=My44Net
+/ip firewall mangle add action=mark-routing chain=output new-routing-mark=HamWAN-OPP src-address-list=My44Net
+{CODE}
+The following configuration will create a brief disconnection of your Network Address Translated (NATed) Internet connectivity.  Make sure you are doing this from a location that allows you continued access to the router, such as your LAN.  The instructions also assume you have a masquerade rule defined already on your ISP INTERFACE, which is typical.
+{CODE(caption="Configure NAT Rules")}
+/ip firewall nat add action=accept chain=srcnat dst-address-list=NONAT-dst place-before=0
+/ip firewall nat add action=accept chain=srcnat routing-table=!ISP src-address-list=NONAT-src place-before=0
+/ip firewall nat remove [find action=masquerade] # This will stop NAT service and potentially disconnect you!
+/ip firewall nat add action=masquerade chain=srcnat out-interface=<ISP INTERFACE>
+/ip firewall nat add action=masquerade chain=srcnat out-interface=HamWAN-PSDR
+{CODE}
+!!!#Configure Border Gateway Protocol (BGP)
+Your OPP provider will give you an Autonomous System Number (ASN) to use for this configuration.  This is referred to as OPP ASN below.  In the case of HamWAN-PSDR this number is 65530.
+{CODE(caption="Configure BGP")}
+/routing filter add action=accept chain=HamWAN-OPP prefix=0.0.0.0/0 set-routing-mark=HamWAN-OPP
+/routing bgp instance add name=HamWAN-PSDR as=<OPP ASN>  client-to-client-reflection=no router-id=<FIRST LOCAL ADDRESS>
+/routing bgp network add network=<YOUR 44NET> synchronize=no
+/routing bgp peer add name=HamWAN-PSDR in-filter=HamWAN-OPP remote-address=<FIRST REMOTE ADDRESS> remote-as=<OPP ASN> instance=HamWAN-PSDR keepalive-time=10s update-source=<FIRST LOCAL ADDRESS>
+{CODE}
+The above instructions assume you just want to announce your entire 44net allocation whenever you connect.  This is the simplest scenario, although it's entirely valid to skip the "network add" command and instead use redistribute-* commands.  Such advanced scenarios are not documented here.
+!!!#Configure Policy Routing
+{CODE(caption="Configure Policy Routing")}
+/ip route rule add action=lookup dst-address=<OPP ADDRESS>/32 table=ISP
+/ip route rule add action=lookup table=main
+/ip route rule add action=lookup routing-mark=HamWAN-OPP table=HamWAN-OPP
+/ip route rule add action=lookup table=ISP
+{CODE}
+If you're an expert in this stuff, you may have noticed there is no ISP routing table yet.  The ISP routing table is used to hold the default gateway your ISP provides you.  The following command assumes this is obtained via DHCP from your ISP:
+{CODE(caption="Configure Dynamic ISP Routing Table")}
+/routing filter add action=accept chain=dynamic-in prefix=0.0.0.0/0 set-routing-mark=ISP
+{CODE}
+If your ISP configuration is instead a static one (where you manually enter a default gateway address), use this command instead:
+{CODE(caption="Configure Static ISP Routing Table")}
+/ip route set [find dst-address=0.0.0.0/0 routing-mark=main] routing-mark=ISP
+{CODE}
+!!!#Configure 44net LAN
+In order to make use of your 44net space you'll want to provide some services on it, or just stick some computers on it.  The simplest way of doing this is to attach them to a dedicated 44net interface on your router:
+{CODE(caption="Configure 44net Interface")}
+/ip address add interface=<44NET INTERFACE> address=<YOUR 44NET + 1>/<YOUR 44NET MASK>
+{CODE}
+For example, if YOUR 44NET is 44.24.131.0/24, then YOUR 44NET + 1 would be 44.24.24.131.1 and YOUR 44NET MASK would be 24.  After that, attach some computers to this interface, give them unique IPs from YOUR 44NET, and set their default gateway to be YOUR 44NET + 1.
+!!!#Configure 44net LAN Security
+By default the whole Internet can talk to everything attached to your 44net LAN.  This is rarely desired.  In most cases, you'll want to expose some services for others to reach, and block out all other inbound communication.  The below is a simple way of implementing this for a sample SSH service (TCP port 22) running on IP address YOUR 44NET + 2.
+{CODE(caption="Configure 44net Service Firewall")}
+/ip firewall filter add chain=44net action=allow comment="SSH" dst-address=<YOUR 44NET + 2> protocol=tcp port=22
+/ip firewall filter add chain=44net action=drop comment="Default deny for all other 44net inbound communications"
+/ip firewall filter add chain=forward action=jump dst-address=<YOUR 44NET>/<YOUR 44NET MASK> jump-target=44net comment="Process 44net service rules"
+{CODE}
+To add a new service, simply add another entry to the 44net chain, making sure to use place-before in such a way that the new entry is before the action=drop rule.
+!!!#Testing and Troubleshooting
+First, make sure your IPIP interface is in the Running state.  This is denoted with a little bold R in front of it:
+{CODE(caption="Check IPIP Interface is Running")}
+/interface ipip print interval=1
+{CODE}
+If the interface is not running, this is probably because the local-address is not bound to the router (check the step where SECOND LOCAL ADDRESS was used in /ip address add), or the remote-address is not routable (check to make sure you have a default route installed).  You can do a further remote-address routability check by using: /ip route check <SECOND REMOTE ADDRESS>.
+
+Another reason for an IPIP interface not coming up is if it was configured with the keepalive= option set.  Please be sure to disable the keepalive feature on the interface by typing: /interface ipip set [[find name=HamWAN-PSDR] !keepalive.  In and around RouterOS v6.27 we are seeing a bug with keepalive not being set properly.  To really make sure keepalive is not being set, do a "print detail" in /interface ipip, and check to make sure keepalive is missing from the output.  Also, do an /interface ipip export and make sure !keepalive is visible.  Finally, do an /interface ipip export verbose, and similarly check !keepalive is visible.  If any of these 3 command outputs are reporting conflicting values for keepalive, RouterOS has hit a bug and the IPIP interface must be removed and re-created.  When you re-create the interface, you'll also need to update any configs that reference it (eg: /ip firewall nat, /ip address).
+
+If the IPIP interface has an R flag that blinks about once per second and/or the /ip route check command above changes its output about once per second, please reach out to your OPP provider for support.
+
+Second, make sure you can ping your OPP provider over IPsec(AH):
+{CODE(caption="Ping OPP Provider Over IPsec(AH)")}
+/ping src-address=<FIRST LOCAL ADDRESS> <FIRST REMOTE ADDRESS>
+{CODE}
+It's perfectly normal if the first ping fails, but subsequent pings should succeed.  If you are getting constant ping failures, check to make sure IPsec has established a Security Association (SA):
+{CODE(caption="Check for IPsec Security Associations (SAs)")}
+/ip ipsec installed-sa print
+{CODE}
+They should be in state=mature, and there should be 2 or 4 of them.  When there are 4, it is OK if 2 of them are in state=dying.  This is a normal part of IPsec refreshing its SAs before they expire.  If you do not see any associations, or they are in state=larval, please reach out to your OPP provider for support.
+
+Third, make sure BGP is connected:
+{CODE(caption="Check BGP Connectivity")}
+/routing bgp peer print status
+{CODE}
+The last attribute printed should say state=established.  If it says state=active or state=idle or anything else, the BGP connection is having problems.  You can do a basic TCP connectivity check to your OPP BGP service with: /system telnet port=179 <FIRST REMOTE ADDRESS>.  You should see telnet say that it has connected, and you should also see some strange characters show up, followed by telnet waiting for your input.  Press Ctrl-] and type q<ENTER> to disconnect.  If you do not see the connection being established, there is a routing problem.  If the connection is closed right after it's established, the routing is working but there's a BGP configuration problem.  In either case, report the results to your OPP provider and ask them for help.
+
+Fourth, check if YOUR 44NET can talk to the Internet:
+{CODE(caption="Check Your 44Net Outbound Internet Connectivity")}
+/ping src-address=<YOUR 44NET + 1> 8.8.8.8
+{CODE}
+You should see pings coming back.  Next check to make sure it's being routed correctly:
+{CODE(caption="Check Your 44Net Outbound Routing")}
+/tool traceroute src-address=<YOUR 44NET + 1> 8.8.8.8
+{CODE}
+A proper traceroute will show a first hop of <SECOND REMOTE ADDRESS>, and then proceed through the Internet to the destination.  If something isn't working here, but the previous tests have passed, reach out to your OPP provider for support.  They may have a problem on their end.
+
+Fifth, check if the Internet can reach you by using one of the various public traceroute servers.  For example: [http://www.monitis.com/traceroute/].  Give this tool <YOUR 44NET + 1> address.
+
+If you are having routing problems, you can in general look at two things:
+{CODE(caption="Check Your BGP Routes")}
+/ip route print where bgp
+{CODE}
+This will show you what routes your router has learned from your OPP providers and installed into its routing table.  Conversely, you can also check what routes you're sending to your OPP provider and make sure YOUR 44NET is in the list:
+{CODE(caption="Check Your 44Net Advertisements")}
+/routing bgp advertisements print
+{CODE}
+If you don't see YOUR 44NET in the list, check /routing bgp networks, and make sure it's in there.
+!!#Setup on Linux Edge Router
+Please help write this section.
+!!#Setup on Cisco IOS Edge Router
+Please help write this section.
+!!#Performance
+Your performance will be limited by your router's ability to do IPsec(AH) cryptographic calculations.  Check your router's CPU usage to see if it's having problems under heavy network load.  You can improve performance by upgrading your router (eg: CCR1009, RB1100AHx2), or migrating the router function to a server or a virtual machine hosted on a server.  MikroTik provides x86 versions of its RouterOS, and they are compatible with VMware.  Make sure to use the E1000 network adapter for best performance and an emulated IDE hard drive for compatibility.  You will need an L4 or better license.
+!#Provider Implementation
+

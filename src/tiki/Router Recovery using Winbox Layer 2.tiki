@@ -1,0 +1,11 @@
+Sometimes a router gets into a bad state and it won't respond to ssh/telnet/winbox or even mac-telnet.  In such situations, the last thing that can be tried is winbox using its layer 2 mode.  These routers won't typcially be on your administrative LAN, so here's how to bridge that remote LAN to your LAN.\n\n#{CODE(caption="On a router sharing the remote LAN with the problematic router")}
+/interface eoip add remote-address=<LOCAL ADMIN LAN ROUTER IP> local-address=<SOME IP ON THIS REMOTE ROUTER> tunnel-id=1 name=eoip1
+/interface bridge add name=bridge1
+/interface bridge port add bridge=bridge1 interface=wlan1-gateway
+/interface bridge port add bridge=bridge1 interface=eoip1
+{CODE}\n#{CODE(caption="On a router connected to your local admin LAN")}
+/interface eoip add remote-address=<SOME IP ON REMOTE ROUTER> local-address=<LOCAL ADMIN LAN ROUTER IP> tunnel-id=1 name=eoip1
+/interface bridge add name=bridge1
+/interface bridge port add bridge=bridge1 interface=LAN
+/interface bridge port add bridge=bridge1 interface=eoip1
+{CODE}\n\nAfter this you should be able to use Winbox's layer 2 discovery protocol and possibly connect to the problematic router.\n\nDon't forget to remove or disable these configs when you're done, since they present a layer 2 security problem for your admin LAN.\n

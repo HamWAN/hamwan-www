@@ -1,0 +1,87 @@
+It is possible to use SSL/TLS for authentication without encryption. This is useful for authenticating to web services over RF where ciphers are not allowed. Without ciphers, username/password authentication is insecure, so we prefer TLS. People expect SSL to be encrypted, so web servers and browsers by default do not allow authentication-only ciphers.
+{maketoc}
+!#Client
+!!#Get a certificate
+''Since no other viable certificate authorities have been found, the following assumes that you are using the ARRL's LoTW. This is a free service available for all, but some may not wish to use it. In that case, we welcome you to establish your own certificate authority as a competitor.''
+!!!#Generate your private key and certificate signing request
+First, download the software "TQSL". Links are as follows (current as of April 2014):
+*[http://www.arrl.org/files/file/LoTW%20Instructions/tqsl-2.0.1.msi|Windows]
+*[http://www.arrl.org/files/file/LoTW%20Instructions/tqsl-2.0.1.dmg|Mac]
+*[http://www.arrl.org/files/file/LoTW%20Instructions/tqsl-2.0.1.tgz|Source]
+Install the software as required on your specific platform. For more specific help with this, refer to the [http://www.arrl.org/files/file/LoTW%20Instructions/TQSL%202_0%202013/Step%201%20Download%20and%20install%20the%20TQSL%20softwarre_2013.pdf|ARRL].
+Once installed, you will be prompted with "You have no callsign certificate installed on this computer with which to sign log submissions. Would you like to request a callsign certificate now?" Click yes.
+Fill the fields with your details; note that QSO end date in most cases should be left empty.
+Once complete, you will be prompted "Do you want to upload this certificate request to LoTW now?" Click yes. 
+Once this has completed, you will see the full TQSL window. Go ahead and click on the "Callsign Certificates" tab, select your certificate, and click on the "Save the callsign certificate" button.
+!!!#Verify your location with the ARRL
+"For radio amateurs in USA authentication is done with a postcard that is mailed to your address that is in the FCC database.  If this address is not current please visit the FCC ULS website and update your address information.
+ You will go to the LoTW web page and enter an eight digit code from the postcard after which the TQ6 file will be e-mailed to the user.
+Non US stations will have to send a copy of your radio amateur operator permit and a copy of another identification such as a driver's license, passport or utility bil.
+Send to:
+ARRL LoTW Administrator
+225 Main St.
+Newington, CT 06111
+Please, no electronic submissions.  This must be postmarked from your location."
+If you're in the US, the postcard will give you instructions; basically, go to [http://p1k.arrl.org/lotw/password|p1k.arrl.org/lotw/password] and enter the code on the front (located 2 lines above the mailing address).
+From here, the ARRL will take a day or so and verify your registration. Then, they will email the address that you from "lotw-admin@arrl.org" a .tq6 file. This contains your public key, the root certificate, and the certificate authority's public certificate (plus additional content that is not relevant to us).
+!!#Export your certificate
+Once you've downloaded the .tq6 file that the ARRL sent, we need to add it to the TQSL application that you used previously. 
+Open TQSL
+On the "Callsign Certificates" tab, and click "Load a Callsign Certificate". Open the file tq6 file you were emailed.
+From the menu, choose "Certificate" -> "Save"
+Save the file (CALLSIGN.p12) to your disk
+Remember the export password you entered
+!!#Import your certificate
+Go to the section "Opera 12.16" below for instructions on how to import your certificate.
+!#Web Server
+!!#Apache
+{CODE(caption="apache-ssl.conf" wrap="0")}
+# Standard HTTPS configuration
+SSLEngine on
+SSLCertificateFile    /etc/apache2/certs/self-signed.crt
+SSLCertificateKeyFile /etc/apache2/certs/self-signed.key
+
+# ARRL Logbook of the World authentication
+SSLCACertificateFile /home/tom/lotw.pem
+SSLVerifyClient optional
+SSLVerifyDepth  4
+SSLOptions +StdEnvVars
+
+# Do not allow encryption
+SSLCipherSuite eNULL{CODE}
+Original credit for ARRL Logbook of the World authentication in Apache goes to Hessu: https://authtest.aprs.fi/
+
+!#Web Browser
+!!#Opera 12.16
+This was done in Opera version 12.16. It looks like newer versions have made this impossible or at least more difficult.
+
+Find old versions of Opera here: http://www.opera.com/download/guide/?custom=yes
+
+!!!#Enable authentication-only ciphers
+To allow authentication without encryption: Go to Preferences > Advanced > Security > Security Protocols > Details. Then select
+* 0 bit Authentication Only (RSA/SHA)
+* 0 bit Authentication Only (RSA/SHA-256)
+{img attId="185" width="600" thumb="y" desc="desc"}
+
+!!!#Install your client certificate
+HamWAN trusts ARRL Logbook of the World to authenticate you with your callsign. After your certificate is signed by the ARRL, do the following.
+# Go to Preferences > Advanced > Security > Manage Certificates ...
+# Click Import
+# Choose you LotW certificate
+# Click Import Certificate
+# Click OK
+# Click OK
+You will see your certifcate in the list, like this:
+{img attId="186" width="600" thumb="y" desc="desc"}
+
+Note: If you get an error that the certificate's chain was not ordered correctly, you may need to [http://www.technologybytes.net/article/27|remove the ARRL root certificate from your .p12 file].
+
+!!#Firefox
+~~#F00:__NOT WORKING__~~ Firefox documentation describes a way to add authentication-only ciphers to the cipher suite, although when I tried this method I still got a cipher mismatch when the server required eNULL (authentication-only) cipher.
+
+{CODE(caption="about:config" colors="null")}security.ssl3.rsa_null_sha: True
+security.ssl3.rsa_null_md5: True{CODE}From http://kb.mozillazine.org/About:config_entries
+
+!!#Chrome
+Chrome provides no mechanism for enabling non-default cipher types, and unencrypted ciphers are disabled by default. There is a feature request for this issue: https://code.google.com/p/chromium/issues/detail?id=58831#c22 Star this issue if you are interested in this functionality.
+

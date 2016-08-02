@@ -1,0 +1,24 @@
+{toc}
+Our original concept for a high-speed data backbone was called the Puget Sound Data Ring. We have gone on to define HamWAN standards and created a reference implementation of HamWAN in the Puget Sound region. Our goal is to build a robust network with many redundant links, not limited to a ring. Much of our current redundancy is provided by Internet tunnels. At the moment, a ring exists between the Snohomish County EOC, Haystack, Queen Anne, and Capitol Park sites. Baldi's secondary link uses a third-party network, and Mirrormont has only a single link to the network. As additional sites become available, redundancy will improve.
+
+!Legacy Abstract
+The Puget Sound has a unique geography of a basin surrounded by mountain ranges.  This naturally lends itself to a ring network implementation, as shown below:
+{img src="tiki-download_file.php?fileId=1&amp;display"}
+Some reasons the ring design is a good starting point:
+#No matter where you are in the Puget Sound, you'll likely have line of sight to at least one of the Ring Nodes
+#Covers a large area and uses few nodes
+#Resistant to any single ring link failing, the packets will simply travel the long way around the ring to get to their destination
+However, there is nothing sacred about the ring.  As it grows and new short-cut links are introduced, it will become a meshed network design.  Not to be confused with mesh network routing protocols.  End users will not connect directly to the ring though.  They will connect to their neighborhood distribution nodes, as noted in the following network topology diagram:
+{img src="tiki-download_file.php?fileId=2&amp;display"}
+Each of those hexagons is a 3-sector Distribution Node site, with each sector on a different frequency.  The end users (Client Nodes) will pick a sector that works for them and associate with it.
+Here is an example topology of potential future sites:
+{img src="tiki-download_file.php?fileId=6&amp;display"}
+
+Current presentation slide deck in a couple different formats:
+{FILE(type="gallery" fileId="5")}PowerPoint{FILE}
+{FILE(type="gallery" fileId="4")}PDF{FILE}
+
+Current list of potential sites in KMZ (Google Earth) format:
+{FILE(type="gallery" fileId="3")}Potential Sites{FILE}
+
+[http://www.wifi-stock.com/details/metal_5shpn.html|Best deal I can find on Metal 5SHPn radios]

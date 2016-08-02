@@ -1,0 +1,16 @@
+!Untriaged
+__Automate firewall management__
+EO would like to have firewall management, especially for whitelists, to be automatically done. The existing system is poor and needs to be replaced.
+''Requested by EO on 28MAR''
+__Network management tool__
+EO and Nigelvh would like to have network management, both infrastructure and clients, be easily managed via a CLI/GUI that is compatible with linux and mac osx. It should be able to easily push a set of manually inputted ROS-Style commands to various filtered locations (all clients, all sector routers, etc). It needs to be secure while not violating part 97 rules. Commands sent to routers need to have the issuing control operator logged on the device.
+''Requested by EO and Nigelvh on 28MAR''
+__Figure out anycast services off net__
+Case: use the same anycast IPs for services on MemHamWAN's network, like NTP server.
+__Contact FCC/ARRL__
+Tell them about our difficulties remotely administrating equipment without encryption.
+!Next actions
+__Decentralized VOIP - Nigel__
+Place Asterisk servers on Cell site servers. Investigate DUNDI to handle registrations across the anycasted servers. Investigate if DUNDI will solve electing a server for centralized functions like conferencing/voicemail.
+!Waiting
+!Some day/maybe

@@ -1,0 +1,9 @@
+{toc order=asc }
+
+!!!General Notes on Links
+Integrate with / make use of Radio Mobile or Radio Mobile Web, or the Linux Splat! application.  Present a map of links, their margins, their physical obsticles, their expected and recorded operating speeds.  Work with Core Routing to see where RF Links make the most sense.
+
+Possibly keep track of Client Node link paths, but this seems like a lot of work.
+
+Decent [http://www.afar.net/rf-link-budget-calculator/|online RF link calculator] for quick and dirty work.
+
