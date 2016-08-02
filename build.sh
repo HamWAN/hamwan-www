@@ -35,7 +35,7 @@ echo "</div>" >> $TMP_DIR/header.html
 # Pass 2: Generate the remaining web contents, incorporating a full menu.html now
 for i in `seq 0 $MAX_I`
 do
-	pandoc -s -B $TMP_DIR/header.html "${FILES[$i]}" -o "$TMP_DIR/${HTMLS[$i]}"
+	pandoc -s -H src/head.html -B $TMP_DIR/header.html "${FILES[$i]}" -o "$TMP_DIR/${HTMLS[$i]}"
 done
 
 # Now publish any resources that might be left in the src tree (images, javascript, etc)
