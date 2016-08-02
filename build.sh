@@ -24,7 +24,7 @@ done < <(find src -type f -name "*.md" -print0)
 MAX_I=`expr ${#FILES[@]} - 1`
 
 # Pass 1: Generate the menu contents
-echo "<div id=\"menu\">" >> $TMP_DIR/footer.html
+echo "<div id=\"menu\"><hr />" >> $TMP_DIR/footer.html
 for i in `seq 0 $MAX_I`
 do
 	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]%.html}</a><br />" >> $TMP_DIR/footer.html
