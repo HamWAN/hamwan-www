@@ -24,18 +24,17 @@ done < <(find src -type f -name "*.md" -print0)
 MAX_I=`expr ${#FILES[@]} - 1`
 
 # Pass 1: Generate the menu contents
-cp src/header.html $TMP_DIR/
-echo "<div id=\"menu\">" >> $TMP_DIR/header.html
+echo "<div id=\"menu\">" >> $TMP_DIR/footer.html
 for i in `seq 0 $MAX_I`
 do
-	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]%.html}</a><br />" >> $TMP_DIR/header.html
+	echo "<a href=\"/${HTMLS[$i]}\">${HTMLS[$i]%.html}</a><br />" >> $TMP_DIR/footer.html
 done
-echo "</div>" >> $TMP_DIR/header.html
+echo "</div>" >> $TMP_DIR/footer.html
 
 # Pass 2: Generate the remaining web contents, incorporating a full menu.html now
 for i in `seq 0 $MAX_I`
 do
-	pandoc -s -H src/head.html -B $TMP_DIR/header.html "${FILES[$i]}" -o "$TMP_DIR/${HTMLS[$i]}"
+	pandoc -s -H src/head.html -B src/header.html -A $TMP_DIR/footer.html "${FILES[$i]}" -o "$TMP_DIR/${HTMLS[$i]}"
 done
 
 # Now publish any resources that might be left in the src tree (images, javascript, etc)
